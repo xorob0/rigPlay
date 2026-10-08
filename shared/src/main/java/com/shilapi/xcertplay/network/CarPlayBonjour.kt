@@ -141,6 +141,10 @@ class CarPlayBonjour(
     private val advertisedHost: String? = null,
     private val useInterfaceMdns: Boolean = false,
     private val onEvent: (CarPlayBonjourEvent) -> Unit = {},
+    /**
+     * Existing-network mode: the other address family of the same interface. Interface mDNS then
+     * runs one registry per address, because a JmDNS instance joins only its own family's group.
+     */
     additionalAddresses: List<InetAddress> = emptyList(),
 ) : Closeable {
     // Interface-bound mDNS does not need Android's NSD service, which may be absent on some head units.
@@ -200,8 +204,8 @@ class CarPlayBonjour(
         override fun serviceResolved(event: ServiceEvent) {
             if (closed) return
             val info = event.info
-            // Use the registry address, not deprecated getInterface(), which can return
-            // another address family of the same Android interface.
+            // Each registry browses its own address family; keep the probe on that family. Use the
+            // registry address, not the deprecated getInterface(), which can return another family.
             val address = info.inetAddresses.firstOrNull {
                 (it is Inet4Address) == (event.dns.inetAddress is Inet4Address)
             }?.let(::applyLocalScope)
@@ -278,7 +282,7 @@ class CarPlayBonjour(
                     requireNotNull(localAdvertisedAddress) {
                         "Interface mDNS requires a local advertised address"
                     }
-                    // A JmDNS instance joins only its address family's multicast group.
+                    // A JmDNS instance joins only its own address family's multicast group.
                     for (address in advertisedAddresses) {
                         val dns = JmDNS.create(address, "carplay-${config.deviceId.replace(":", "")}")
                         interfaceMdns.add(dns)
@@ -512,6 +516,10 @@ class CarPlayBonjour(
             ?: addresses.firstOrNull()
     }
 
+    /** The advertised address of [target]'s family, so a probe never binds across families. */
+    private fun sourceAddressFor(target: InetAddress): InetAddress? =
+        advertisedAddresses.firstOrNull { (it is Inet4Address) == (target is Inet4Address) }
+
     private fun applyLocalScope(address: InetAddress): InetAddress {
         val scope = advertisedAddresses.filterIsInstance<Inet6Address>()
             .firstOrNull { it.scopeId != 0 }?.scopeId ?: return address
@@ -598,9 +606,6 @@ class CarPlayBonjour(
             runCatching { socket.close() }
         }
     }
-
-    private fun sourceAddressFor(target: InetAddress): InetAddress? =
-        advertisedAddresses.firstOrNull { (it is Inet4Address) == (target is Inet4Address) }
 
     private fun emit(event: CarPlayBonjourEvent) {
         if (closed) return

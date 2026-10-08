@@ -9,7 +9,6 @@ import android.widget.Toast
 import com.shilapi.xcertplay.airplay.CarPlayMediaButton
 import com.shilapi.xcertplay.airplay.VideoInCar
 import com.shilapi.xcertplay.host.R
-import com.shilapi.xcertplay.hud.BydNavigationOutputs
 import com.shilapi.xcertplay.orchestration.CarPlayController
 import com.shilapi.xcertplay.orchestration.CarPlayVideoListener
 import java.util.concurrent.CompletableFuture
@@ -21,15 +20,16 @@ import java.util.concurrent.atomic.AtomicLong
 /**
  * iOS 27 video in car (see [VideoInCar]). The iPhone hands the car a media URL (insertPlayQueueItem)
  * and drives it (setRate, seek, stop); the car plays it in [CarPlayVideoActivity], which opens as soon
- * as the iPhone starts the item (or sends requestUI "videoplayback:") and only while the car is in P.
+ * as the iPhone starts the item (or sends requestUI "videoplayback:"). On a car this needs the gear in P;
+ * a rig is never driving, so it always counts as parked.
  */
 internal object CarPlayVideo : CarPlayVideoListener {
-    private const val TAG = "DiPlay-Video"
+    private const val TAG = "rigPlay-Video"
     const val SKIP_MILLIS = 10_000
     private const val URL_TIMEOUT_SECONDS = 10L
 
     private val main = Handler(Looper.getMainLooper())
-    private val sender = Executors.newSingleThreadExecutor { Thread(it, "diplay-video-reply").apply { isDaemon = true } }
+    private val sender = Executors.newSingleThreadExecutor { Thread(it, "rigplay-video-reply").apply { isDaemon = true } }
     @Volatile private var appContext: Context? = null
     @Volatile private var controller: CarPlayController? = null
 
@@ -46,18 +46,26 @@ internal object CarPlayVideo : CarPlayVideoListener {
     var playing = false
         private set
     var pendingSeekMillis: Int? = null
-    var activity: CarPlayVideoActivity? = null
+    @Volatile var activity: CarPlayVideoActivity? = null
 
     fun attach(context: Context, next: CarPlayController) {
         appContext = context.applicationContext
         controller = next
         next.videoListener = this
+        // SimHub wheel buttons and Android media keys reach the controller from any thread.
+        next.mediaButtonInterceptor = { index ->
+            if (activity == null) false else {
+                main.post { onMediaKey(index) }
+                true
+            }
+        }
     }
 
-    override fun readParked(): Boolean? = appContext?.let(BydNavigationOutputs::parked)
+    /** A sim rig is never on the road: video may always play. */
+    override fun readParked(): Boolean? = true
 
     override fun onVideoAllowedChanged(allowed: Boolean) {
-        if (!allowed) main.post { closePlayer("the car left P") }
+        if (!allowed) main.post { closePlayer("video no longer allowed") }
     }
 
     override fun onVideoSessionEnded() {

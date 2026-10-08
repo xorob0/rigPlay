@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Idle mode (#39): the idle dashboard and the built-in rigPlay idle screen. -->
+<resources>
+    <string name="rig_idle_waiting_simhub">Waiting for SimHub…</string>
+    <string name="rig_idle_last_pc">Last PC: %1$s</string>
+    <string name="rig_idle_connected">Connected to %1$s</string>
+    <string name="rig_idle_waiting_phone">Waiting for your iPhone</string>
+    <string name="rig_idle_server_off">SimHub\'s web dash server is off, so the idle dashboard cannot be shown.</string>
+    <string name="rig_idle_no_dashboard">No idle dashboard is chosen on the rigPlay page in SimHub.</string>
+    <string name="rig_idle_load_failed">The idle dashboard could not be loaded.</string>
+    <string name="rig_idle_not_paired">Pair rigPlay with SimHub to use the idle screen.</string>
+    <string name="rig_idle_home">Home</string>
+    <string name="rig_idle_close">Close</string>
+    <string name="rig_idle_show">Idle screen</string>
+    <string name="rig_idle_toolbar">rigPlay menu</string>
+
+    <string name="rig_settings_idle">When no iPhone is connected</string>
+    <string name="rig_settings_idle_mode">Show</string>
+    <string name="rig_settings_idle_mode_dashboard">SimHub idle dashboard</string>
+    <string name="rig_settings_idle_mode_screen">rigPlay screen</string>
+    <string name="rig_settings_idle_after">Go idle after</string>
+    <string name="rig_settings_idle_after_now">Immediately</string>
+    <string name="rig_settings_idle_after_minutes">%1$d min</string>
+    <string name="rig_settings_idle_off">Turn the screen off</string>
+    <string name="rig_settings_idle_off_never">Never</string>
+    <string name="rig_settings_idle_off_after">After %1$d min</string>
+    <string name="rig_settings_idle_note">With the PC off the rigPlay screen is shown, since SimHub\'s dashboards come from the PC. Over the home page and settings it comes only after \"Go idle after\" without a touch; tap it to return to where you were. Turning the screen off blacks out the rigPlay screen and dims the backlight; tap it to wake it. CarPlay comes to the front as soon as your iPhone connects.</string>
+</resources>

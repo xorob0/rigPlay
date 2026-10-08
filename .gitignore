@@ -39,3 +39,7 @@ release-signing.properties
 *.key
 *.apk
 *.aab
+
+# SimHub plugin (.NET) build output
+plugin/**/bin/
+plugin/**/obj/

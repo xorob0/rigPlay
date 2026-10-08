@@ -1,0 +1,12 @@
+{
+  "type": "welcome",
+  "hostId": "3f6c2a4e-8d1b-4c7a-9e55-0b2d7f1a6c90",
+  "name": "RIG-PC",
+  "version": "0.1.0",
+  "simhubVersion": "9.12.6",
+  "protocol": 1,
+  "features": [
+    "telemetry",
+    "idleDashboard"
+  ]
+}

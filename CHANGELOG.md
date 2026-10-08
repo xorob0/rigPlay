@@ -1,136 +1,173 @@
-# DiPlay 0.2.13 — 2026-10-06
+# rigPlay 0.2.0 — unreleased
 
-- Enable the legacy Android 9 Wi-Fi Direct group path with generated credentials and serialized ownership/cleanup; requested frequency remains unverified on Android 9 (#282).
-- Prefer current IPv4 hotspot endpoints, preserve scoped IPv6 fallback, and refine Auto channel priorities beside a 5 GHz station without guaranteeing a band (#283, #309).
-- Avoid unused Android NSD and USB-service dependencies for wireless startup; retain only rendered sessions on the guarded handoff fallback (#313, #300, #258).
-- Add explicit experimental hotspot join Check/Apply/Restore on eligible Android 13+, user-configured 5 GHz hotspots, with complete private recovery state and no automatic mutation (#251).
-- Switch wireless to USB within the host activity, verify requested permissions independently, preserve other accessibility services and cancel stale permission work (#268).
-- Preserve validated USBMUX payload replies with narrow four-byte trailer recovery (#298).
-- Add optional live dock/split-screen areas, square-canvas screen rotation and the selected-decoder square check; add a default-off experimental side panel (#246, #277, #284, #245).
-- Preserve DiLink 4 native casting mode, offer pre-connection calibration and apply live cluster picture adjustments (#260, #265).
-- Retain a recent dashboard turn card only across wireless replacement within its stale window; add a Smaller map choice (125%) and the checked DiLink 3 full-then-half projection sequence with compensation (#304, #306, #296).
-- Restore battery reads when only sys.car.protocol is populated and recover eligible unbound wheel services using already-authorized ADB (#285, #297).
-- Add independent default-off experimental DiLink 3 call keys and dashboard calls, with initialized watcher readiness, unique ownership, pristine-safe cancellation and retryable dirty cleanup; target-car acceptance remains requested (#243).
-- Correct the observed 24 kHz Siri microphone RTP clock while retaining 48 kHz for telephony/unobserved formats; add bounded, default-off experimental AAC-LC buffered music and single-session renderer ownership (#295, #308).
-- Set TCP_NODELAY on the touch event channel; contributor latency observations remain device-specific (#311).
-- Improve full-size multi-window home/settings appearance, ambient-setting visibility and shared menu persistence; add main-settings car-button customization (#252, #239, #281, #302).
-- Add light waiting/cluster placeholders and a 300 ms cluster fade; the main waiting screen follows CarPlay day/night mode (#305, #317).
-- Add Traditional Chinese (Taiwan) as the seventh app language, preserve explicit script selection and correct Simplified Chinese hotspot wording (#314, #286). The release website also gains a Traditional Chinese edition.
-- Retain the multilingual website groundwork, add the smooth-wireless guide and make buffered-ownership tests deterministic without runtime/API changes (#240, #310, #312).
+- Merged upstream DiPlay 0.2.13 (its `main` as of 2026-10-06). rigPlay takes upstream's wireless and
+  AirPlay core and keeps its own screens; head-unit features (BYD cluster and HUD, ADB, car hotspot
+  control, wheel keys, side panel, Android TV, the six extra languages and the website) stay out.
+  What changed for the tablet:
+  - Wireless startup reworked after upstream: the hotspot is checked for a stable interface before
+    the phone is told about it, the 30 s first-connection watchdog is tied to the listener it was
+    armed for, and a session that already renders video is kept when the Bluetooth handoff times out
+    instead of being torn down (#229, #258, #313 upstream).
+  - Hotspot endpoints prefer a usable IPv4 address and keep a scoped IPv6 fallback; Auto channel
+    selection beside a 5 GHz home network tries saved and aligned channels, then explicit 2.4 GHz,
+    before other 5 GHz fallbacks (#283, #309 upstream).
+  - Siri's 24 kHz microphone stream gets the right RTP clock; telephony stays at 48 kHz (#295 upstream).
+  - TCP_NODELAY on the CarPlay touch event channel (#311 upstream).
+  - USBMUX payload replies with a four-byte trailer are recovered instead of dropped (#298 upstream).
+  - Android 9's legacy Wi-Fi Direct group path is present in the code; rigPlay still documents
+    Android 10 as the minimum for wireless (#282 upstream).
+  - Upstream's AAC-LC buffered music stream is in the AirPlay core but has no setting in rigPlay and
+    stays off (#308 upstream).
 
-See [0.2.13 release notes](docs/RELEASE-NOTES-0.2.13.md) for all 35 contribution links, credits, experimental settings, compatibility limits and diagnostic export steps. Final exact-release validation is recorded in [VALIDATION](docs/VALIDATION.md). This remains a public preview; no fresh complete-release vehicle test is claimed.
+# rigPlay 0.2.0-rc.3 — 2026-10-05
 
-# DiPlay 0.2.12 — 2026-10-04
+Fourth pre-release, for testing on a rig: the fixes and features taken from upstream DiPlay 0.2.11–0.2.12
+that apply to rigPlay, video in CarPlay, and the existing Wi-Fi network mode reworked after upstream's
+vehicle-tested Same LAN mode. Android versionCode 4; it installs over 0.2.0-rc.2.
 
-- Add Existing Wi-Fi / Same LAN wireless CarPlay with scoped IPv4/IPv6 discovery and network-change cleanup (#223).
-- Wait for a stable car-hotspot interface and recover bounded wireless attempts when no AirPlay TCP follows StartSession (#229); add observed-state, authorized-ADB hotspot fallback on firmware exposing supported commands (#235).
-- Improve Apple USB attach matching and narrowly scoped optional USB-prompt assistance (#170, #224).
-- Pause Android 10 station scans during eligible hotspot/P2P sessions, preserving Same LAN, with controller leases and durable retryable restoration (#225).
-- Improve split-screen, launcher cards, short-screen preparation and virtual cluster/floating-map geometry (#171, #172, #181).
-- Add independent system-bar controls and correct in-session save/cancel and Local/USB-CH341 authentication selection (#191, #194).
-- Add system, light-sensor, day and night CarPlay appearance modes, richer custom turn cards, and live main-video picture controls (#178, #193, #211).
-- Offer custom integer resolution from 30% to 160%, with shared limits, correct 30%/160% labels and decoder/canvas capability fallback; refresh connection settings on resume (#179, #230, #196).
-- Reconcile opt-in DiLink 4 cluster routing/calibration into one decoder owner, retain verified HUD gates, and journal exact stock-map holds and recovery (#213, #187).
-- Add DiLink 3 guidance text and projection-display support with committed recovery before mutation, partial-setup compensation and retryable stock restoration (#182).
-- Add opt-in wheel map zoom and main-screen joystick while preserving press/release and call behavior; reject stale queued work across phone/screen changes (#214, #231).
-- Switch supported dashboard contents live using actual delivery and safely retained paused choices; preserve selection across stream/phone replacement (#232).
-- Add a five-second dashboard-song-on-change window with timer invalidation, and retain album art while the next transfer is pending (#215, #228).
-- Export reports through Downloads, document picker, app-external or private fallback storage, with explicit View/Share actions (#185, #219).
+- Video in CarPlay (iOS 27): a video sent to CarPlay on the iPhone plays full screen on the tablet,
+  driven from the iPhone; SimHub wheel buttons play/pause it and skip 10 s. A rig counts as always
+  parked. Plain web video plays; FairPlay-protected video (Apple TV+, most paid streaming) does not. The
+  video's sound plays on the tablet, not on the PC. On by default (Display and performance → Video in
+  CarPlay).
+- Resolution is a whole-number percentage from 30 % to 160 % (rigPlay screen and in-session slider).
+  Above 100 % CarPlay draws a larger picture that the tablet scales down; if the tablet's decoder cannot
+  handle it, rigPlay falls back to 100 % and says so. A 60/80/100 % setting from an older build is kept.
+- Picture adjustments: brightness, contrast, saturation and warmth for the CarPlay picture, applied live
+  on the tablet from Display and performance → Picture adjustments.
+- Wi-Fi Direct: a Preferred channel setting (Auto, 5 GHz 36–48/149–165, or 2.4 GHz 1–11). A channel the
+  tablet refuses fails with a message instead of silently using another one.
+- Existing Wi-Fi network mode (#33) follows upstream DiPlay's vehicle-tested Same LAN mode: the iPhone
+  is given the tablet's IPv6 link-local address (IPv4 when there is none), Bonjour and the AirPlay
+  listener serve both IPv4 and IPv6 on the same port, the router's BSSID goes to the iPhone as a hint,
+  open networks work (StartSession no longer rejects an empty password), a password that does not
+  match the network's security is reported on Android 12+, and losing the network or a change of its
+  addresses restarts the wireless session.
+- Wireless: when the iPhone receives StartSession but never opens the CarPlay connection, rigPlay gives
+  up after 30 s and reconnects, instead of waiting for the much longer control timeout.
+- Fixes taken from upstream DiPlay (0.2.11–0.2.12), only where they touch code rigPlay still has:
+  - Location, wheel speed and vehicle status are offered to the iPhone only on the Wi-Fi tunnel, never
+    on the Bluetooth bootstrap, so iOS no longer binds them to the short-lived Bluetooth link and then
+    refuses them on Wi-Fi.
+  - USB: the VPN that carries the wired CarPlay link is scoped to rigPlay, so it no longer captures the
+    tablet's other traffic (including the SimHub link).
+  - Media: the media session republishes metadata only when the song or artwork changes (not on every
+    position update); the artist survives title-only updates (lyrics apps); the previous album art
+    stays up while the next cover transfers, and a refused cover clears it.
+  - Audio: AudioTrack attributes no longer crash on Android 9; a decoder that fails to configure or
+    start is released.
+  - Reconnect after a rotation uses the settled display size; settings changed on the rigPlay screen
+    reach the next connection without reopening the CarPlay screen.
+  - Wireless: Bonjour advertises the same AirPlay feature bits as `/info`; Android 10 falls back to the
+    system Wi-Fi Direct group when the custom group config is unavailable; more wireless diagnostics in
+    the exported report.
 
-See [0.2.12 release notes](docs/RELEASE-NOTES-0.2.12.md) for the complete corrections, hardware evidence and issue-reporting steps. This remains a public preview; no fresh end-to-end vehicle test of the complete repaired release is claimed.
+# rigPlay 0.2.0-rc.2 — 2026-10-04
 
-# DiPlay 0.2.11 — 2026-10-03
+Third pre-release, for testing on a rig: the v2 features (idle dashboard, data to CarPlay, PC microphone)
+and the audio fixes from the second rig test. Android versionCode 3; it installs over 0.2.0-rc.1.
 
-- Add preferred Wi-Fi Direct channel selection for the next connection; Auto remains the default, and manual channel rejection/mismatch reports an error (#175).
-- Add a movable custom dashboard turn card with 2% position steps; leave unknown arrows blank and clear expired guidance (#155).
-- Offer two-, three- or four-finger settings swipes, keeping three as the default (#156).
-- Add opt-in read-only legacy vehicle-data detection while preserving default DiLink 5.0 mode; reject unaccepted/stale probe publication and fix accepted-battery lock ordering (#158, integrated through #173).
-- Keep wireless location/vehicle data on its runtime Wi-Fi link and defer parked-video decisions until SETUP/event readiness (#157).
-- Add optional automatic car-hotspot startup, off by default, with verified own-package authorization and unified vehicle settings (#164/#173).
-- Support Android TV/remote controls while preserving head-unit touchscreen Back and absolute knob X/Y; keep its workflow source-only (#146).
-- Retain artists across partial title updates and publish song metadata/artwork only when changed (#161, #162).
-- Correct Android 9 audio API use, release failed codecs, reconnect with settled geometry/readiness, and require own-app VPN scope (#168 and local corrections).
-- Add one guarded Auto-mode API 29 P2P recovery for the exact reported pre-create Builder error, plus bounded wireless/media/theme/own-app-exit diagnostics without payload recording or automatic uploads.
+- Audio to the PC: no more dropouts on a Wi-Fi link that stalls. The second rig test still cut out
+  (18 underruns and 10 skips in 100 s at 0 % loss): the buffer's target was capped at 250 ms and it threw
+  the depth away above 500 ms, so every stall of 300–650 ms was a dropout, often followed by a skip. The
+  jitter buffer now measures each stall when the held-back datagrams arrive and raises its target to a
+  quarter more than the stall (up to 2 s for music, 1.5 s for Siri, 1 s for calls), waits for that depth
+  before resuming, keeps the learned depth in the settings across SimHub restarts (the Audio section
+  shows it, with a Forget button and the minimum to start from), trims excess depth by playing 1.5 %
+  faster instead of skipping, and only skips a full second above the target. A pause on the phone no
+  longer counts as a stall. The page shows the longest stall per stream, and the tablet logs every 10 s
+  whether its Wi-Fi held the datagrams back or it produced them late.
+- Other voices lower or pause the music (#58): the plugin watches the audio sessions of the programs
+  listed in the Audio section ("Other voices", CrewChiefV4 by default) and, while one of them talks,
+  lowers the CarPlay music to the chosen volume (25 % by default, the same ramp as for Siri) or, in
+  "Pause the music" mode, toggles play/pause on the phone and toggles back when it is quiet again. The
+  page shows which program is talking.
+- Idle dashboard (v2): the plugin's "Idle dashboard" selector pushes a dashboard the tablet shows while
+  no iPhone is connected, with a built-in offline idle screen when the PC is off and after a period of
+  inactivity (#38, #39, #53).
+- Data to CarPlay (v2): SimHub telemetry goes to the phone as the car's position, speed, heading,
+  gear, night mode and vehicle status, at up to 10 Hz with per-field switches; the position comes from
+  one of three fake-GPS strategies (fixed origin, dead reckoning, or the real circuit via the shipped
+  track table and a recorded lap), chosen in the "Data to CarPlay" section and off by default
+  (#40–#46). Route guidance and now-playing artwork are exposed as SimHub properties (#47).
+- Microphone to the phone (v2): with the tablet's Microphone setting on "PC via SimHub", Siri and
+  callers hear the PC's input device chosen in the Microphone section (#34), with an automatic boost
+  (on by default, up to +20 dB, cap adjustable 0–30 dB; or a fixed boost with Automatic off) so your
+  voice reaches a level Siri hears well; the level meter shows the boost in effect.
+- Dashboard screen: SimHub's web dash toolbar and swipe help are hidden, so the dashboard fills
+  the tablet without tapping Fullscreen (#50); the page loads as soon as SimHub names a dashboard and
+  stays loaded between opens (#51); SimHub's own icon is used on the SimHub button and the CarPlay
+  car icon, fetched once from the web dash server (#52).
 
-See [0.2.11 release notes](docs/RELEASE-NOTES-0.2.11.md) for requirements, device-test limits and fresh-report guidance. Preferred channel selection does not establish stutter as fixed; Qin Plus, Siri, iOS 15 and day/night reports remain under investigation. Android 9 is still the minimum; Wi-Fi Direct needs Android 10+.
+- Wireless on an existing Wi-Fi network: a second wireless mode where the phone and the tablet share
+  the home network instead of the tablet's own Wi-Fi Direct group, with the spike procedure for the
+  target tablet in `docs/COMPATIBILITY.md` (#33).
+- Opus is available as an optional audio format for the stream to the PC, off by default; PCM stays
+  the default.
+- Releases: the APK on the GitHub release is now built, signed and bundled with the experimental
+  accessory identity by the release workflow itself, from repository secrets, and verified before it is
+  attached; `SHA256SUMS.txt` lists every file. Pull-request CI builds still carry no identity. The
+  identity caveat is unchanged: see `docs/THIRD_PARTY_NOTICES.md` ("Experimental authentication data")
+  and `SECURITY.md`.
 
-# DiPlay 0.2.10 — 2026-10-03
+# rigPlay 0.2.0-rc.1 — 2026-10-03
 
-- Publish CarPlay song metadata, position and artwork to Android media sessions; bound artwork queues and reject stale work across sessions (#82).
-- Preserve normal USBMUX frames while handling narrowly validated handshake padding (#114); let USB connect without saved wireless-hotspot credentials (#130).
-- Handle unknown reported Wi-Fi Direct security types, retry busy channels and allow bounded 5 GHz fallback (#121).
-- Select an available AirPlay port and advertise it over Bonjour and wired/wireless iAP2; close sockets on failed setup/notification (#143).
-- Enable available platform echo cancellation and noise suppression for calls, restoring the previous mode afterward (#116).
-- Detect BYD CAN/CANFD battery protocols and clear unsupported/stale readings (#123).
-- Add a saved show/hide setting for the home-screen dashboard-map mirror (#133).
-- Improve optional parked video with seeking and ten-second skip controls; validate media URLs and redirects (#129).
-- Extend Ukrainian translations, including the new map-mirror setting (#128 and release localization).
-- Add bounded anonymous Bluetooth/USB/boot and microphone capture/encode/send diagnostics to exported reports; omit audio and packet contents.
+Second pre-release, for testing on a rig. Android versionCode 2, so it installs over 0.1.0-rc.1 when
+both are signed with the same key.
 
-See [0.2.10 release notes](docs/RELEASE-NOTES-0.2.10.md) for contributor credits, requirements and validation limits. Android 9 remains the minimum supported version.
+- Opus audio compression as an option, off by default (protocol §10.4). **Opus compression** on the
+  rigPlay page's Audio section makes the plugin offer `opus` before `pcm_s16le`; the tablet then
+  encodes with Android's Opus encoder (20 ms packets, 96 kbit/s stereo or 48 kbit/s mono, about
+  0.1 Mbit/s instead of 1.5) and falls back to PCM on a device without an encoder. The plugin decodes
+  with Concentus, so `rigPlay-plugin.zip` now holds `Concentus.dll` next to `RigPlay.dll`; without it
+  the plugin still loads and offers PCM only. The page shows the format of each stream and the packets
+  that did not decode.
+- Audio to the PC no longer cuts in and out on a tablet on Wi-Fi. The tablet holds a low-latency Wi-Fi
+  lock and marks the audio datagrams for the Wi-Fi voice queue while it streams, decodes on an
+  audio-priority thread, waits for a busy decoder instead of dropping its packets, and advances the
+  datagram clock over audio that never reached it so the PC plays silence there instead of running its
+  buffer dry. The plugin's jitter buffer starts at 80 ms, grows on every underrun (up to 250 ms, kept
+  across a stream restart) and only skips ahead above 500 ms instead of 200 ms; its WASAPI buffer is
+  100 ms. The rigPlay page shows the buffer target, underruns, late datagrams and skips per stream.
 
-# DiPlay 0.2.9 — 2026-10-02
+- The APK attached to the release, `rigPlay-0.2.0-rc.1.apk`, is built and signed locally and carries
+  the same experimental accessory identity DiPlay ships, so it connects to an iPhone; see
+  `docs/THIRD_PARTY_NOTICES.md` ("Experimental authentication data") and `SECURITY.md`. APKs built
+  by CI carry no identity and cannot connect.
 
-- Follow BYD head-unit day/night changes while CarPlay is visible, including firmware that does not reliably deliver Android configuration callbacks.
-- Restore media and navigation audio stream selection to 0–20 and inherit older saved navigation settings when no new selection exists. Vendor-specific outputs depend on head-unit support.
-- Keep CarPlay connected through normal surround-view window changes, preserving video proportions and touch alignment. A connection started in a narrow camera window reconnects once when the window grows to restore the full-screen canvas.
-- Add Ukrainian to the app language picker, Android app-language settings, and website. Correct its audio help to describe streams 1–20.
-- Add an optional CarPlay song title, artist, and play/pause display on the BYD instrument cluster, using the existing network ADB connection.
-- Add a CarPlay navigation widget for launchers that host standard Android widgets, with the next turn, road, distance, arrival information, and song. Clear expired guidance and explicitly cleared song titles.
-- Add an optional floating copy of the dashboard map on the centre screen, with drag, pinch-to-resize, and tap-to-open controls. Requires permission to draw over other apps; Usage Access restricts it to home screens.
-- Fix floating-map resizing on head units that ignore small pinch gestures.
-- Let compatible launchers embed the live dashboard map on Android 11 and newer. Sharing is off by default; turning it off closes existing shared map views.
-- Add map-host and DiPlay Home sample apps for developers. DiPlay Home combines the live map, standard Android widgets, a clock, and an app list; sample builds, lint, and Home back-navigation tests are checked in CI.
-- Leave the GPS course empty when its direction is unknown, instead of reporting north. Valid GPS directions are preserved.
-- Thanks to @lpcheng1208 for PRs [#71](https://github.com/shihabal3amri/DiPlay/pull/71), [#88](https://github.com/shihabal3amri/DiPlay/pull/88), and [#89](https://github.com/shihabal3amri/DiPlay/pull/89).
-- Thanks to @romanchukg-cloud for PRs [#93](https://github.com/shihabal3amri/DiPlay/pull/93), [#101](https://github.com/shihabal3amri/DiPlay/pull/101), [#105](https://github.com/shihabal3amri/DiPlay/pull/105), [#106](https://github.com/shihabal3amri/DiPlay/pull/106), [#107](https://github.com/shihabal3amri/DiPlay/pull/107), [#108](https://github.com/shihabal3amri/DiPlay/pull/108), and [#109](https://github.com/shihabal3amri/DiPlay/pull/109).
+# rigPlay 0.1.0-rc.1 — 2026-10-03
 
-See [0.2.9 release notes](docs/RELEASE-NOTES-0.2.9.md) for the merged changes and validation limits.
+First rigPlay pre-release: an Android tablet on a sim-racing rig runs CarPlay from your iPhone and
+works with SimHub on the PC. This build is for testing on a rig; the end-to-end checklist in
+`docs/TESTING.md` has not been run on the target tablet yet.
 
-# DiPlay 0.2.8 — 2026-09-30
+- Project setup: the SimHub plugin lives beside the Android app in `plugin/`, CI builds and tests
+  both, and the PC ↔ tablet protocol is written down with shared fixtures (#1).
+- Rebrand from DiPlay: application ID `io.xorob.rigplay`, the BYD head-unit features and the
+  automotive module removed, an English-only interface worded for a tablet on a rig (#2).
+- SimHub plugin: a rigPlay page in SimHub, tablet discovery and PIN pairing, the dashboard chosen
+  in SimHub pushed to the tablet, music-control properties and actions, and the tablet's CarPlay
+  audio played on a PC output device (#3). Install from `rigPlay-plugin.zip`; see
+  `plugin/INSTALL.md`.
+- Tablet app: SimHub link and first-run pairing, a home screen for the rig, a SimHub button that
+  shows the chosen dashboard, CarPlay audio streamed to the PC, media commands from wheel buttons,
+  and the phone released when SimHub goes away (#4).
+- Versioning restarts at 0.1.0 (Android versionCode 1); the app, the plugin and the release tag
+  all read the root `VERSION` file.
 
-- Keep iPhone location reporting active across the wireless Bluetooth-to-Wi-Fi CarPlay handoff; limit location updates to one per second on wireless and USB.
-- Add optional ADB wheel-speed and gear reporting for iPhone dead reckoning when GPS is unavailable. Tunnel use has not yet been verified.
-- Add optional iOS 27 video playback on the car screen while parked, with iPhone, touchscreen and steering-wheel controls; close playback when leaving P.
-- Explain unsupported DRM-protected video such as Apple TV+, which requires a licensed FairPlay receiver.
-- Improve playback error reporting and preserve CarPlay when the head unit cannot play a video.
+Known limits of this pre-release:
 
-# DiPlay 0.2.7 — 2026-09-29
+- The APK attached to the release, `rigPlay-0.1.0-rc.1.apk`, is built and signed locally and carries
+  the same experimental accessory identity DiPlay ships, so it connects to an iPhone. It is not an
+  Apple-issued identity; see `docs/THIRD_PARTY_NOTICES.md` ("Experimental authentication data") and
+  `SECURITY.md`. APKs built by CI carry no identity and cannot connect; to build your own, see
+  `docs/BUILD.md` ("Accessory identity").
+- Wireless CarPlay on a tablet that is also on home Wi-Fi is not verified yet (#33); wired USB is
+  the fallback.
+- The PC microphone is not routed to the phone (#34).
 
-- App interface in English, Simplified Chinese, Arabic, Russian and Spanish; synchronized Android app-language settings.
-- Steering-wheel media controls and long-press Siri on supported BYD firmware while CarPlay is on screen.
-- Dashboard display choices: map, turn card, or both; corrected dashboard keyframe recovery.
-- Optional ADB feature on supported DiLink 5.0: pause the dashboard map stream when its display mode hides the map.
-- Optional ADB battery reporting for Apple Maps, with warning threshold, charging-connector selection and a checked reconnect action.
-- Audio playback reliability fixes and clearer dashboard settings.
-- Clarify the BYD-only support scope on the README and all five website editions.
+# Inherited history
 
-# 0.2.0 — BYD navigation and connection improvements
-
-- Standalone windshield HUD arrows, distance and street names on the verified DiLink5.1 firmware; no ADB, root or computer helper.
-- Retain contributor cluster/SOME-IP navigation, route parsing, BYD CarPlay icon and display-size presets.
-- Fix Car hotspot startup by using scoped IPv6 when available and binding discovery/probing to the AP interface. Physically confirmed on the development car.
-- Drain asynchronously decoded audio during packet gaps and rebuild the music buffer after starvation. Wi-Fi Direct is much better in the user retest; occasional audio cutouts remain for a later version.
-- Preserve bounded music-buffer choices, USB read improvements and decoder recovery; fix USB request/close races and keep vendor output outside phone callbacks.
-- Save audio/video/receive timing and discovery diagnostics without road names or protocol payloads.
-- HUD cleanup on normal end/disconnect/off/stale input; interrupted sessions recover on the next app launch. Force-stop may leave guidance visible until reopening.
-- Thanks to @romanchukg-cloud and @georgiyrr for PR #3 and vehicle testing.
-
-# 0.1.0 release restored — 2026-09-25
-
-- Rebuilt and signed the APK locally with explicitly supplied runtime authentication assets.
-- Restored release downloads; no app behavior or version-code change from 0.1.0.
-- Accessory identity remains in the APK only. No credential files enter Git or the source archive.
-- Retained generated test identities and public-source credential checks.
-- Source/CI builds omit runtime identity assets by default; local packaging requires an explicit external directory.
-
-# Source reset — 2026-09-25
-
-- Withdrew the 0.1.0 APK and removed its release tag.
-- Reset the public branch after preserving restricted local incident records.
-- Removed static synthetic test private keys; generate test identities at runtime.
-- Removed automatic private-asset packaging and disabled the old release build script.
-- Added a build guard rejecting credential asset files.
-- Replaced the download site with a five-language suspension notice.
-
-The APK was subsequently rebuilt and restored as described above. Existing copies cannot be recalled by a Git history reset.
+rigPlay is a fork of [DiPlay](https://github.com/shihabal3amri/DiPlay) 0.2.10 by shihabal3amri,
+itself based on xcertplay by shilapi. The history of the inherited CarPlay receiver up to the fork
+is in the [DiPlay changelog](https://github.com/shihabal3amri/DiPlay/blob/main/CHANGELOG.md).

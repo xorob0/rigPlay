@@ -1,0 +1,6 @@
+{
+  "type": "pairResult",
+  "ok": false,
+  "reason": "wrongPin",
+  "attemptsLeft": 2
+}

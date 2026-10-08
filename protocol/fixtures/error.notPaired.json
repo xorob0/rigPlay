@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "code": "notPaired",
+  "message": "status requires a paired session",
+  "refType": "status"
+}

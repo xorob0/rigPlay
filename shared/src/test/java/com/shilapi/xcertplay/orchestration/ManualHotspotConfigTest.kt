@@ -49,7 +49,6 @@ class ManualHotspotConfigTest {
         ssid: String?,
         passphrase: String? = null,
     ): CarPlayRuntimeConfig = CarPlayRuntimeConfig(
-        mfiTarget = MfiTarget.LOCAL,
         identification = Iap2IdentificationConfig(
             name = "test",
             modelIdentifier = "test",

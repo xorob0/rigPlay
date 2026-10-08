@@ -124,7 +124,8 @@ class CarPlayVpnService : VpnService() {
 
     /**
      * Starts the AirPlay listener on the local-only Wi-Fi AP address without establishing a VPN or
-     * NCM bridge.
+     * NCM bridge. Each of [additionalBindAddresses] gets its own listener on the same port; the
+     * modes that create a network pass none and keep a single listener.
      */
     @Synchronized
     fun attachWireless(
@@ -357,3 +358,8 @@ class CarPlayVpnService : VpnService() {
         fun prepare(context: Context): Intent? = VpnService.prepare(context)
     }
 }
+
+/** Whether [peer] is this tablet (loopback, the listening address or any local interface), as for Bonjour probes. */
+internal fun isOwnAddress(peer: java.net.InetAddress, local: java.net.InetAddress): Boolean =
+    peer.isLoopbackAddress || peer == local ||
+        runCatching { java.net.NetworkInterface.getByInetAddress(peer) != null }.getOrDefault(false)

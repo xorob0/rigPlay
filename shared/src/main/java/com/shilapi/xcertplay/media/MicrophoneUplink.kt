@@ -23,10 +23,15 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * The recorder runs only while the matching audio stream is active, so callers start this after
  * the first downlink audio packet and close it on stream teardown.
+ *
+ * The PCM comes from [pcSource] when it offers a source (the PC microphone through SimHub, #34:
+ * [NetworkMicrophoneSource]), and from the tablet's `AudioRecord` otherwise or when that source
+ * cannot start.
  */
 internal class MicrophoneUplink(
     private val config: MicrophoneConfig,
     private val onDiagnostic: (String) -> Unit = {},
+    private val pcSource: (MicrophoneConfig) -> MicrophonePcmSource? = NetworkMicrophoneSource::forUplink,
 ) : Closeable {
     private val running = AtomicBoolean(false)
     private val stats = MicrophoneCaptureStats(config, report = { message ->
@@ -37,10 +42,23 @@ internal class MicrophoneUplink(
     @Volatile private var socket: DatagramSocket? = null
     @Volatile private var opusEncoder: OpusEncoder? = null
     @Volatile private var effects: List<AudioEffect> = emptyList()
+    @Volatile private var pcmSource: MicrophonePcmSource? = null
     private var thread: Thread? = null
 
     fun start(): Boolean {
         if (!running.compareAndSet(false, true)) return true
+
+        val network = try {
+            pcSource(config)
+        } catch (error: Exception) {
+            Log.w(TAG, "microphone network source unavailable", error)
+            null
+        }
+        if (network != null) {
+            if (startFromSource(network)) return true
+            // The PC could not take it: record the tablet's microphone instead.
+            running.set(true)
+        }
 
         val channelMask = if (config.channels >= 2) {
             AndroidAudioFormat.CHANNEL_IN_STEREO
@@ -125,7 +143,12 @@ internal class MicrophoneUplink(
             if (config.audioType == "telephony") effects = voiceEffects(nextRecorder.audioSessionId)
             nextRecorder.startRecording()
             stats.started(routeType(nextRecorder))
-            thread = Thread({ capture(nextRecorder, nextSocket) }, "carplay-mic").apply {
+            val reader: (ByteArray, Int, Int) -> Int = { buffer, offset, length ->
+                nextRecorder.read(buffer, offset, length, AudioRecord.READ_BLOCKING)
+            }
+            thread = Thread({
+                capture(reader, maxOf(config.frameBytes, MIN_READ_BYTES), { routeType(nextRecorder) }, nextSocket)
+            }, "carplay-mic").apply {
                 isDaemon = true
                 start()
             }
@@ -136,6 +159,55 @@ internal class MicrophoneUplink(
             release()
             false
         }
+    }
+
+    /**
+     * Runs the uplink from [source] instead of `AudioRecord`. False (everything released, [running] cleared) when the
+     * encoder, the socket or the source cannot start.
+     */
+    private fun startFromSource(source: MicrophonePcmSource): Boolean {
+        val nextEncoder = if (config.codec == AudioCodecKind.OPUS) {
+            OpusEncoder(config.bitrate ?: 48_000).takeIf { it.available }
+        } else {
+            null
+        }
+        if (config.codec == AudioCodecKind.OPUS && nextEncoder == null) {
+            stats.failure(MicrophoneFailureStage.ENCODER)
+            source.close()
+            running.set(false)
+            return false
+        }
+        val nextSocket = try {
+            DatagramSocket(null).apply {
+                reuseAddress = true
+                bind(InetSocketAddress(InetAddress.getByName("::"), 0))
+            }
+        } catch (error: Exception) {
+            stats.failure(MicrophoneFailureStage.SOCKET_CREATION, error)
+            nextEncoder?.close()
+            source.close()
+            running.set(false)
+            return false
+        }
+        if (!source.start()) {
+            nextSocket.close()
+            nextEncoder?.close()
+            source.close()
+            running.set(false)
+            return false
+        }
+        pcmSource = source
+        socket = nextSocket
+        opusEncoder = nextEncoder
+        Log.i(TAG, "microphone source=${source.description} rate=${config.sampleRate} channels=${config.channels}")
+        onDiagnostic("Microphone: source=pc")
+        stats.started(null)
+        // One frame per read: the source paces itself like a blocking recorder, so larger reads only add delay.
+        thread = Thread({ capture(source::read, config.frameBytes, { null }, nextSocket) }, "carplay-mic-pc").apply {
+            isDaemon = true
+            start()
+        }
+        return true
     }
 
     private fun voiceEffects(sessionId: Int): List<AudioEffect> = listOfNotNull(
@@ -177,16 +249,20 @@ internal class MicrophoneUplink(
         }
     }
 
-    private fun capture(recorder: AudioRecord, socket: DatagramSocket) {
+    private fun capture(
+        read: (ByteArray, Int, Int) -> Int,
+        readSize: Int,
+        routeInfo: () -> Int?,
+        socket: DatagramSocket,
+    ) {
         val frame = ByteArray(config.frameBytes)
-        val readBuffer = ByteArray(maxOf(frame.size, MIN_READ_BYTES))
+        val readBuffer = ByteArray(maxOf(frame.size, readSize))
         val counters = MicrophoneCounters()
-        val routeInfo = { routeType(recorder) }
         var filled = 0
         try {
             while (running.get()) {
                 stats.reading()
-                val count = recorder.read(readBuffer, 0, readBuffer.size, AudioRecord.READ_BLOCKING)
+                val count = read(readBuffer, 0, readBuffer.size)
                 stats.read(count)
                 if (count < 0) {
                     if (running.get()) {
@@ -275,6 +351,8 @@ internal class MicrophoneUplink(
         } catch (_: Exception) {
             // Best effort; release below is authoritative.
         }
+        // Unblocks a network source's read and sends micStop.
+        pcmSource?.let { source -> runCatching { source.close() } }
         try {
             socket?.close()
         } catch (_: Exception) {
@@ -314,6 +392,9 @@ internal class MicrophoneUplink(
         val currentEncoder = opusEncoder
         opusEncoder = null
         currentEncoder?.close()
+        val currentSource = pcmSource
+        pcmSource = null
+        currentSource?.let { source -> runCatching { source.close() } }
     }
 
     private companion object {

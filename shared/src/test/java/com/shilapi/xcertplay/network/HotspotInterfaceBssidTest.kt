@@ -7,7 +7,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class HotspotInterfaceBssidTest {
-    @Test fun decodesBydBuiltInHotspotAddress() {
+    @Test fun decodesBuiltInHotspotAddress() {
         assertEquals("4E:B1:C7:94:48:3F", HotspotInterfaceBssid.decode(bytes("fe80::4cb1:c7ff:fe94:483f")))
     }
 

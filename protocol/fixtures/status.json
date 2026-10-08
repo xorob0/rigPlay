@@ -1,0 +1,16 @@
+{
+  "type": "status",
+  "phoneConnected": true,
+  "phoneName": "Tim's iPhone",
+  "screen": "carplay",
+  "nowPlaying": {
+    "title": "Teardrop",
+    "artist": "Massive Attack",
+    "album": "Mezzanine",
+    "app": "Spotify",
+    "playing": true,
+    "position": 83.4,
+    "duration": 330.0,
+    "updatedAt": 1791043200123
+  }
+}

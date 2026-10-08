@@ -1,0 +1,15 @@
+{
+  "type": "status",
+  "phoneConnected": true,
+  "screen": "dashboard",
+  "nowPlaying": {
+    "title": "Radio 1",
+    "artist": null,
+    "album": null,
+    "app": "Podcasts",
+    "playing": false,
+    "position": 0,
+    "duration": null,
+    "updatedAt": 1791043260000
+  }
+}

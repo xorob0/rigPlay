@@ -1,0 +1,7 @@
+{
+  "type": "status",
+  "phoneConnected": false,
+  "phoneName": null,
+  "screen": "idle",
+  "nowPlaying": null
+}

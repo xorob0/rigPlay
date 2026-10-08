@@ -1,0 +1,8 @@
+{
+  "type": "hello",
+  "tabletId": "9b1e4d2c-5a7f-4e3b-8c61-2f0a9d4b7e18",
+  "name": "Lenovo Tab P11",
+  "appVersion": "0.3.0",
+  "protocol": 1,
+  "minProtocol": 2
+}

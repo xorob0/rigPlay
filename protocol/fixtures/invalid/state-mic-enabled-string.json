@@ -1,0 +1,14 @@
+{
+  "type": "state",
+  "dashboardUrl": null,
+  "audio": {
+    "enabled": true,
+    "port": 23712,
+    "formats": [
+      "pcm_s16le"
+    ]
+  },
+  "mic": {
+    "enabled": "yes"
+  }
+}

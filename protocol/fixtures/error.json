@@ -1,0 +1,8 @@
+{
+  "type": "error",
+  "code": "unsupportedProtocol",
+  "message": "plugin speaks 2-3, tablet 1-1",
+  "fatal": true,
+  "minProtocol": 2,
+  "maxProtocol": 3
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mic_source">Microphone</string>
+    <string name="mic_source_pc">PC via SimHub</string>
+    <string name="mic_source_tablet">This tablet</string>
+    <string name="mic_source_note">With PC via SimHub, Siri and callers hear the PC microphone chosen on the rigPlay page in SimHub while rigPlay is linked to it, and this tablet\'s microphone otherwise. Use headphones on the PC: there is no echo cancellation.</string>
+</resources>

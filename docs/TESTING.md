@@ -1,107 +1,119 @@
-# Test checklist
+# Rig test checklist
 
-Use the [installation guide](INSTALL.md). With the car parked, verify wired and wireless connection, picture, touch and music. Test disconnect/reconnect, then settings Apply/Cancel. Save a diagnostic report after reproducing an issue.
+Run this on a real rig before each release, and after changes to the connection, audio, pairing or the
+plugin. Unit tests and the Windows VM do not cover the tablet's radios, the iPhone or real audio
+hardware. Some steps exercise v1 features that are still being built
+([v1 milestone](https://github.com/xorob0/rigPlay/milestone/1)); mark those "not built yet" rather than
+skipping them silently.
 
-## Custom stream resolution
+Set up the rig as in [INSTALL.md](INSTALL.md). The tablet must run an APK built with the accessory
+identity ([BUILD.md](BUILD.md#accessory-identity-required-to-connect-to-an-iphone)); a CI APK cannot
+connect to an iPhone.
 
-In the home settings and the in-session menu, confirm the accepted range is **30–160%**. Try 160%, cancel an edit, save an unrelated setting, and reconnect; the exact saved percentage must survive. Enter 161% in the numeric dialog and confirm it stays open with an error. Reset must only change the draft to 100% until Save/Apply is selected.
+## Record first
 
-On a parked head unit, test a supported setting above 100% with Default, Smaller and Large icon/text sizes. Confirm the display diagnostics show the requested and effective resolution, actual decoder size/rate/alignment support, negotiated canvas and video output. An unsupported enlarged canvas must fall back before advertising it to the phone, with a notice; resolution falls back to 100% if removing the Smaller-size enlargement is insufficient, and 100% is saved for later connections. Compare picture sharpness, touch mapping, audio and sustained video smoothness. Decoder metadata and automated tests cannot establish performance on real hardware, so the contributor's supersampling result needs a signed vehicle retest.
+Put these at the top of the report (pull request, issue or release notes):
 
-## Android 10 Wi-Fi scan recovery
+- rigPlay app version and plugin version (both should match `VERSION`).
+- Tablet make, model and Android version.
+- iPhone model and iOS version.
+- SimHub version.
+- Transport (wireless or USB) and, for wireless, the Wi-Fi Direct band and channel from the diagnostic
+  report.
+- PC audio output device used.
 
-On a parked DiLink 3 head unit with network ADB already authorized, compare hotspot/P2P wireless CarPlay with the car's Wi-Fi client disconnected. Confirm that a supported framework reports `Wi-Fi connectivity scans paused=true` and check whether the contributor's periodic stutter is resolved. Close the session and confirm station scanning/reconnect returns. Trigger a full controller retry or replace the controller while the prior restore is delayed: an old cleanup must never enable scans after the replacement reports its pause.
+## Before you start
 
-Temporarily make the authorized ADB connection unavailable during teardown, then restore access. Confirm cleanup retries while the app remains open, and confirm a subsequent session's pause survives any pending old retry. Interrupt the app after suppression, reopen it, and verify the recorded restore is recovered; a force-stop cannot restore until the app next runs. With **Same LAN / Existing Wi-Fi**, confirm no pause is reported and normal station reconnect/roaming still works. On Android versions other than 10, or without existing ADB approval, there must be no suppression or approval prompt. These hardware checks remain necessary after the automated ownership/recovery tests pass.
+- The plugin is installed, SimHub's web dash server is on (port 8888), and a dashboard is chosen under
+  **Dashboards → While driving** on the rigPlay page.
+- The tablet is paired with the PC, and the iPhone is paired with the tablet over Bluetooth.
+- **Auto-start on boot** is on in the tablet's settings.
+- A wheel or keyboard button is mapped to `RigPlay.NextTrack` and another to `RigPlay.Siri` in SimHub's
+  **Controls and events**.
+- A SimHub dashboard with a text field bound to `[RigPlay.NowPlaying.Title]` is open on the PC (in
+  SimHub's dash studio preview, or the web dash in a browser).
+- Start with the PC and the tablet off.
 
-## Diagnostic export without a picker
+## End to end
 
-On an Android 9 emulator or head unit without a document picker, open **Settings → Diagnostics → Save diagnostic report**. Confirm that no picker is required and that the success dialog shows a TXT file under `Android/data/<package>/files/diagnostic-reports/`. Read that file and verify the app/device information and UTF-8 text. Use **View** and **Share** from the confirmation. Export twice and confirm that the reports have distinct file names and the earlier file is not overwritten. On Android 10+, normal exports should still use `Downloads/DiPlay`; **Choose save location** should still open a working picker, and cancelling it should not export anything. If external storage is unavailable, confirm that the private in-app fallback can still be viewed and shared. Do not disable system components on a car to simulate the missing-picker case; use an emulator for that simulation.
+| # | Do | Expect |
+| --- | --- | --- |
+| 1 | Boot the PC and start SimHub. Open the rigPlay page. | The Status section shows the tablet server running on its ports, and "waiting for tablet". |
+| 2 | Boot the tablet. Do not touch it. | rigPlay starts in the foreground and shows "SimHub: connected" within 10 s of appearing. The rigPlay page lists the tablet as connected. |
+| 3 | Leave the iPhone unlocked near the tablet, with Bluetooth and Wi-Fi on. Do not touch the tablet. | The iPhone joins wirelessly (Bluetooth, then Wi-Fi Direct) and CarPlay appears on the tablet. `RigPlay.PhoneConnected` is true. |
+| 4 | Play music on the iPhone for ten minutes while driving. | Sound comes from the PC output chosen on the rigPlay page, not from the tablet speaker, and never cuts out after the first minute. The Audio section's "Music and media" line shows datagrams arriving; note its `underruns`, `longest stall`, `skips` and `(target …)` at the end: on a tablet on Wi-Fi the target settles where the network's stalls need it (a few hundred ms is normal, up to 2 s), the underrun count stops growing once it has, and skips stay at 0. The Buffer row shows the learned depth; it is kept for the next SimHub start. The dashboard field bound to `RigPlay.NowPlaying.Title` shows the track title and updates on the next track. |
+| 5 | Press the button mapped to `RigPlay.NextTrack`. Then press the one mapped to `RigPlay.Siri` and ask Siri something. | The track skips on the phone. Siri opens on the CarPlay screen; Siri's voice comes from the PC and the music is lowered while Siri speaks. |
+| 6 | Tap the **SimHub** button on the tablet's home screen. Return to CarPlay. Then tap the car icon (labelled SimHub) inside CarPlay, and return again. | The SimHub button and (from the CarPlay session that starts after the first SimHub connection) the car icon show SimHub's logo, unless a custom CarPlay icon is set. Both open the dashboard chosen on the rigPlay page, full screen with live data and without SimHub's toolbar (Fullscreen, Reload, Back, Prev. page, Next page) or its swipe help, with no tap; swiping left or right still changes the dashboard page. The dashboard shows at once, without SimHub's loading screen, every time after the link came up (it is loaded in the background). Going back shows CarPlay at once, without a reconnect: music keeps playing and the phone stays connected. |
+| 7 | Make a phone call from CarPlay (or receive one). Talk both ways. | The other side hears you through the tablet's microphone (v1). You hear them from the PC output. Music is lowered during the call and comes back after it. |
+| 8 | Shut the PC down (or close SimHub). Time it. | Within about 6 s CarPlay ends on the iPhone and the phone is released. Audio stops. The tablet shows "waiting for SimHub". Nothing plays on the tablet speaker. |
+| 9 | Boot the PC and start SimHub. Do not touch the tablet or the phone. | The tablet reconnects to SimHub, then the iPhone reconnects by itself and CarPlay comes back. Audio plays from the PC again. |
+| 10 | Reboot the tablet. Do not touch it. | rigPlay starts by itself, reconnects to SimHub, and the iPhone reconnects as in step 3. |
 
-For channel memory, connect until authenticated CarPlay renders, disconnect and reconnect without changing the car's Wi-Fi association. Look for `remembered saved` followed by `remembered first`. Report absent events; creating a hotspot alone is insufficient.
+## Regression
 
-Include head-unit model, DiLink/Android, iPhone/iOS, wired/wireless, app version and exact steps. Do not post credentials or unreviewed personal information. See [compatibility](COMPATIBILITY.md) for remaining limitations.
+These come from the checklist rigPlay inherited and still apply.
 
-## Preferred Wi-Fi Direct channel
+- **Display scale.** In CarPlay, swipe down with three fingers to open settings. Change **CarPlay size**
+  and choose **Apply and reconnect**: CarPlay reconnects and uses the new size. Change it again and choose
+  **Cancel**: the old size stays. While disconnected, **Save** applies to the next connection. Repeat once
+  with **Resolution** and **Frame rate**. Some iPhones ignore the size; note it if so.
+- **Reconnect after Wi-Fi loss.**
+  - Turn the iPhone's Wi-Fi off for 10 s and on again, or walk out of range and back. CarPlay reconnects
+    by itself, without touching the tablet.
+  - Turn the tablet's Wi-Fi off and on, or restart the home router. While the PC link is down the phone is
+    released as in step 8; when the link is back it reconnects as in step 9.
+- **Channel memory.** Connect wirelessly until CarPlay shows a picture, disconnect, and connect again
+  without changing the tablet's Wi-Fi. The diagnostic report shows `Wi-Fi P2P remembered saved` after the
+  first connection and `Wi-Fi P2P remembered first` on the second. Report it if they are absent. Creating
+  a Wi-Fi Direct group alone is not a pass.
+- **Wired fallback.** **Connect with USB** with a data cable: picture, touch and audio work.
+- **PC microphone (#34).** With **Settings → Microphone: PC via SimHub** on the tablet and a headset on the
+  PC, ask Siri something and make a short call: Siri understands the PC microphone, the caller hears it, the
+  rigPlay page's Microphone section shows "Sending to <tablet>" with a moving level while the phone listens
+  and "Stopped: micStop" after; unplug the PC's network mid-call: the plugin stops within 2 s.
+- **Pairing.** Type a wrong PIN: the tablet says so and allows another try; the third wrong PIN ends the
+  attempt. **Forget** the tablet on the rigPlay page: the tablet returns to the pairing screen. Pair again.
+- **Diagnostics export.** Reproduce any problem, then **Settings → Diagnostics → Save diagnostic report**.
+  The report is saved to Downloads/rigPlay. Open it and check that it holds no Wi-Fi password, pairing token
+  or key material before attaching it anywhere.
 
-- In **Settings → Connection setup → Wi-Fi Direct**, confirm **Preferred channel: Auto** on a fresh install. Select channel 149 and Cancel; Auto must remain selected. Select 149 and Save, reopen the chooser and restart the app to confirm it stays saved.
-- Disconnect/reconnect after saving. Check `channel preference=149 frequencyMHz=5745`, `create mode=PREFERRED_CHANNEL`, and `requestedMHz=5745 actualMHz=5745 matched=true`. An unsupported channel or a different actual channel must report an error instead of silently falling back. Select Auto to restore automatic startup.
-- Compare Auto and manual choices with the car already joined to Wi-Fi. A manual choice must override station alignment and any remembered automatic channel. Successful manual sessions must not replace the remembered automatic configuration.
-- Switch to built-in hotspot and USB. The channel chooser must be hidden for built-in hotspot, and neither connection may apply the Wi-Fi Direct preference. Returning to Wi-Fi Direct must restore the saved choice. Saving a channel during a connection must leave that session running and apply the change to the next connection.
+## Developer checks
 
-## Wireless and USB car data
+Automated checks to run before the rig test. CI runs all of these on every pull request.
 
-- On wireless, with **Report location to iPhone** on, confirm the Bluetooth bootstrap identifies with `location=false vehicleStatus=false`, then the Wi-Fi tunnel receives its own `start-location-information` before its first `location-information`. There must be no location output on Bluetooth and no unsolicited continuation from it.
-- On USB, start a fresh wired session rather than plugging into an already active wireless session. Confirm the USB iAP2 link receives StartLocationInformation and carries all location updates itself.
-- With **Car battery for the iPhone** on, confirm on wireless that the Bluetooth bootstrap does not advertise Vehicle Status and that the Wi-Fi tunnel receives its own `0xa100 start-vehicle-status` before sending `0xa101 vehicle-status`. On USB, the single wired iAP2 link must receive `0xa100` and send `0xa101`. A missing or stale battery reading must leave Vehicle Status undeclared rather than sending invented values.
+```sh
+# Android: unit tests, lint and an identity-less debug APK
+./gradlew :shared:testDebugUnitTest :common:testDebugUnitTest :mobile:lintDebug :mobile:assembleDebug
 
-## Video while parked
+# No credential files in the tracked tree
+python3 scripts/check_public_tree.py
 
-- Use a plain HTTPS MP4 or HLS item that supports AirPlay, such as one sent from Safari. DRM-protected services and apps that disable AirPlay are not acceptance tests.
-- Test fresh wireless and fresh USB sessions separately. Confirm `/info videoInCar=true`, SETUP negotiates `videoPlayback`, the event channel becomes ready, and the latest P-state reports `delivery=SENT` even if it was first `QUEUED`.
-- Confirm the video settings stream and remote-control stream are accepted, `requestUI videoplayback:` opens the player, and the player log reports a validated internet network before loading the URL.
-- Shift out of P and confirm availability becomes false and the car player closes immediately. Disable ADB or make the gear unreadable and confirm the same fail-closed behavior.
+# Plugin: tests and build
+dotnet test plugin/RigPlay.Tests
+dotnet build plugin/RigPlay -c Release
+```
 
-## Rotation during reconnect
+On the Windows VM with SimHub (see [testing-vm.md](testing-vm.md)), `scripts/vm.sh plugin` installs the
+built `RigPlay.dll` and restarts SimHub; `scripts/vm.sh logs` and `scripts/vm.sh shot <file>` show the result.
 
-On an Android device that supports screen rotation, connect until CarPlay renders, then rotate from landscape to portrait and back while the connection is rebuilding. Repeat in both directions, including several quick rotations and a 180-degree turn. Let the device settle after the last rotation and check that the CarPlay picture has the correct aspect ratio and that touch targets match the displayed controls.
+Without a tablet:
 
-In the diagnostic report, the next `Starting CarPlay controller at` and `Display request` must use the latest settled dimensions, including a `Display updated while handshake is reset` event that arrived during teardown. A queued size change must settle before startup; cancelling it by returning to the accepted size must still resume the connection. On a BYD head unit, also open and close the camera window to confirm that a shrink/restore within the original window keeps the existing CarPlay session.
+- **Audio:** `plugin/tools/AudioSender` streams a WAV file or a tone as spec datagrams to the plugin's
+  audio port. Check that it is heard on the chosen output, that 5 % loss stays listenable, and that
+  stopping the sender silences the output within 1 s. With `--opus` it sends 20 ms Opus packets; the
+  plugin plays them only while **Opus compression** is on (and `Concentus.dll` is installed), and the
+  Audio section shows the stream as `opus` at about 50 pkt/s.
 
-## Location reporting
+  ```sh
+  dotnet run --project plugin/tools/AudioSender -- <pc-ip> 23712 music.wav --loss 5
+  dotnet run --project plugin/tools/AudioSender -- <pc-ip> 23712 --tone 440 --seconds 10
+  dotnet run --project plugin/tools/AudioSender -- <pc-ip> 23712 music.wav --opus 96 --loss 5
+  ```
 
-With the car parked, open **Settings → Location → Report location to iPhone**.
+- **Control channel:** connect to the control port and type a `hello` line; the plugin answers with
+  `welcome` (format in [protocol.md](protocol.md#61-hello)).
 
-- On a fresh installation, the switch is off. Enabling it requests precise location if needed; denying the request or granting only approximate location leaves it off.
-- Grant precise location, enable the switch, then reopen Settings to confirm the saved state. With no connection running, the setting applies to the next connection.
-- During wired and wireless CarPlay, enabling or disabling the switch reconnects the session. When enabled and requested by the iPhone, check for `start-location-information` and `location-information` in the DiPlay diagnostics; on wireless, also verify that reporting continues after the Bluetooth-to-Wi-Fi handoff.
-- Disable the switch and confirm the next session does not advertise location reporting. These checks verify the accessory reporting path; they do not establish which inputs iOS uses in each fused location result.
-
-## Advanced vehicle data
-
-- Expand **Settings → Location → Advanced vehicle data**. Confirm a fresh install uses **Default mode · verified on DiLink 5.0 head units** and shows the battery, wheel-speed and parked-video switches without a field probe.
-- In Default mode, tap **Check ADB access** and record the battery, speed and gear it shows. With CarPlay connected, turn on a switch whose data cannot be read: CarPlay must stay connected and the page must show what cannot be read.
-- Select **Legacy head-unit detection · tested on controller 13 / DiLink 3.0**. Approve the key if the car asks; the same action must continue into the read-only field probe. With “Always allow” ticked, the page must not say the car allowed DiPlay only once. A failed probe must leave Default mode selected.
-- Reopen Settings, restart DiPlay, change gear and reconnect CarPlay. The successful probe, resolved fields and enabled battery/wheel-speed/video switches must remain saved without another tap, even when the current firmware metadata differs.
-- Switch back to Default mode and confirm the saved legacy probe remains available when Legacy mode is selected again.
-- Turn ADB off temporarily. Saved functions and switches must remain visible; turning ADB back on allows automatic validation. Two READY-but-unreadable validations trigger one automatic re-probe, while an incomplete re-probe preserves the previous snapshot and shows manual retry.
-- Press the first probe, authorization and retry controls after scrolling down the page. Progress and results must remain at the same scroll position rather than jumping to the top.
-- Scroll down Settings, open CarPlay, then return to Settings (Back to DiPlay or the three-finger gesture). The page must keep its scroll position.
-- When the BYD navigation card is available, confirm **Dashboard song** exists there exactly once and does not appear in Advanced vehicle data. Without that card, it must appear once under Advanced vehicle data, and turning it on must show the CarPlay song on the dashboard. With **Song only when it changes** on, a new song must show for about 5 seconds and the card must then empty; pause and play alone must not show it again.
-
-## Hotspot and vehicle-settings interaction
-
-- On a supported BYD unit, choose the built-in car hotspot. Automatic hotspot startup stays off on a fresh installation. Enable it explicitly and approve the ADB prompt; the setting saves only after DiPlay confirms its own required permissions. Denial must leave it off. Choosing Wi-Fi Direct hides the hotspot card and preserves its saved preference.
-- Expand Advanced vehicle data. Battery, wheel-speed and parked-video switches must appear only in that section, with unavailable legacy fields hidden. The hotspot card must not provide duplicate switches that bypass the selected mode.
-- Start a user vehicle check or probe, then try the hotspot switch before it finishes. A second authorization flow must not start. After the vehicle operation finishes, the hotspot switch becomes usable again.
-- Start hotspot authorization while Advanced vehicle data is expanded. Mode and vehicle choices must stay disabled until it completes; an automatic saved-field validation must resume afterwards without another authorization prompt.
-- During a pending battery preflight, let the hotspot eligibility check finish and redraw Settings. A valid vehicle result must still apply the requested reconnect once; an unreadable result or ADB failure must keep the existing connection.
-
-
-## Dashboard song only when it changes
-
-- Enable Dashboard song and Song only when it changes. A new title/artist appears for five seconds, then the card becomes blank/stopped. Pause/play and duplicate metadata must not reopen the card or extend its window.
-- During that window, turn off Song only when it changes. The song must remain visible after the old five-second deadline. Turn off Dashboard song instead; the old timer must not recreate a blank card. Disable/re-enable and change tracks quickly to confirm earlier timers cannot dismiss a newer song.
-- Show a wheel zoom/volume note while a song changes. The note must stay visible for its own duration, then restore the latest song if its five-second window is still active, or a blank card otherwise. A note from a disconnected session must not affect a new session.
-- On supported HUD firmware, confirm HUD title/lyrics continue to follow the actual phone metadata while the dashboard card is blank or showing a wheel note. The updated upstream blank-card behavior still needs a vehicle retest.
-
-## Steering-wheel dashboard map zoom
-
-- On a fresh installation, wheel zoom is off. Enable the key service explicitly and configure the mode/zoom keys with the car parked. Confirm leaving settings, disabling wheel zoom, or waiting ten seconds cancels a pending key assignment. Subsequent hardware keys must keep their ordinary action.
-- With the dashboard map visible, test both toggle and five-second modes. The mode key selects zoom, the zoom keys change the map, and pressing the mode key again restores volume. With the map hidden, stopped, or configured as a turn card, keys must keep their ordinary car action.
-- Disconnect/reconnect CarPlay and disable/re-enable wheel zoom while zoom is active. Zoom must stay off until another mode-key press. Repeat while the CarPlay screen moves to the background and while the instrument map/card closes.
-- Hold a volume key while a call starts or ends, the zoom timer expires, the map disappears, or the feature is disabled. Confirm every press has its matching release, with no stuck volume action or stray car key action. Test CarPlay and BYD Bluetooth calls; audio-mode call detection still needs firmware-specific vehicle confirmation.
-- Recheck the current cluster/HUD controls, Same LAN connection, and diagnostic-report export after the update.
-
-## Live dashboard content switching
-
-- With the car parked, switch among Map, Turn card, and Map with the iPhone's turn card. Confirm the live switch keeps the phone connected and wheel zoom is available only for a delivered, visible map.
-- Hide/pause the cluster map, choose different content, then resume it. The pause must remain in effect until resume, which shows the latest selection. Recreate the cluster stream to confirm the selection is reapplied after SETUP, with no stale wheel eligibility before delivery. Replace/reconnect the phone after a successful live change and confirm it keeps the selection; failed or stale switches must not overwrite the last accepted choice.
-- Interrupt the event channel during a switch. The settings caller must fall back to reconnecting for the latest selection; rapid changes or a replacement controller must not trigger an old reconnect. Recheck the custom overlay and DiLink 5.1 reconnect paths.
-
-## Steering-wheel CarPlay joystick
-
-- On a fresh installation the joystick is off. Turn it on (the key service as for zoom) and check the joystick, previous/next, select and mode keys with the car parked.
-- With CarPlay connected, the media key turns the joystick on (toast with the keys, "Joystick on" on the dashboard where the song shows). Previous/next and the volume roller move CarPlay's focus on the main screen (lists, the Maps side panel), play/pause selects and the custom key goes back. The media key turns it off and every key has its usual action again; the custom key switches the map zoom again.
-- With "Joystick turns off by itself" on, the joystick ends 15 seconds after the last press and when a route starts; with it off, it stays on until the media key. Disconnect CarPlay or turn the setting off while it is on: it must be off afterwards.
-- Without a CarPlay session the media key opens BYD media. During a CarPlay or Bluetooth call every key keeps its usual action, and no press loses its release.
+  ```sh
+  nc <pc-ip> 23711
+  {"type":"hello","tabletId":"9b1e4d2c-5a7f-4e3b-8c61-2f0a9d4b7e18","name":"nc","appVersion":"0.1.0","protocol":1,"minProtocol":1}
+  ```

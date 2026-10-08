@@ -867,7 +867,6 @@ class AirPlaySession(
             }
             val videoDelivery = videoPlaybackAvailability.setEventReady(true)
             debugLog("airplay video event ready availability=$videoDelivery")
-            reapplyClusterContent()
             runEventRead(socket)
         } catch (error: Exception) {
             if (!closed.get()) {

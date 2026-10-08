@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Wireless modes: existing Wi-Fi network (#33). English only for now. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="wireless_mode_existing_network">Existing Wi-Fi network (experimental)</string>
+    <string name="wireless_mode_existing_network_short">Existing Wi-Fi network</string>
+    <string name="wireless_mode_existing_network_desc">The iPhone must join the same Wi-Fi network as this tablet. Untested with iOS; use Wi-Fi Direct or the tablet hotspot unless you are testing this.</string>
+    <string name="hotspot_hint_existing">Existing Wi-Fi network (experimental) · Keep the tablet and your iPhone on the same Wi-Fi.</string>
+    <string name="existing_network_setup">Network setup</string>
+    <string name="existing_network_details_title">Wi-Fi network details</string>
+    <string name="existing_network_details_intro">The Wi-Fi network this tablet is connected to. rigPlay gives its name and password to the iPhone so it joins the same network.</string>
+    <string name="existing_network_name">Network name</string>
+    <string name="existing_network_password">Network password (empty for an open network)</string>
+    <string name="existing_network_name_hidden">Android hides the network name until Location is allowed. Type it exactly as it appears in Wi-Fi settings.</string>
+    <string name="existing_network_save_and_use">Save network details and use this mode</string>
+    <string name="existing_network_edit">Edit network · %1$s</string>
+    <string name="existing_network_status">Detected: %1$s · %2$s · channel %3$s (%4$s)</string>
+    <string name="existing_network_status_none">Not connected to Wi-Fi. Join the home Wi-Fi first.</string>
+    <string name="existing_network_status_no_address">no address yet</string>
+    <string name="existing_network_channel_unknown">unknown</string>
+    <string name="existing_network_details_missing">Save the Wi-Fi network details in Connection setup first.</string>
+</resources>

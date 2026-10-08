@@ -8,7 +8,8 @@ import android.net.wifi.WifiManager
 /**
  * Reads whether the head unit's own Wi-Fi hotspot is on, for the "Car hotspot" link.
  *
- * The user can turn it on in car settings or opt into [CarHotspotTethering] after granting permission.
+ * rigPlay does not turn the hotspot on itself: that needs a permission Android only grants over
+ * ADB. The user turns it on in the system settings.
  */
 object CarHotspotStatus {
     private const val ACTION_WIFI_AP_STATE_CHANGED = "android.net.wifi.WIFI_AP_STATE_CHANGED"
@@ -17,8 +18,8 @@ object CarHotspotStatus {
 
     /**
      * True/false from the Wi-Fi AP state, or null when the firmware hides it (then callers must
-     * not block the connection). Interface flags are not used: BYD keeps wlan1 up with an address
-     * while tethering is off.
+     * not block the connection). Interface flags are not used: some firmware keeps wlan1 up with an
+     * address while tethering is off.
      */
     fun isEnabled(context: Context): Boolean? {
         val app = context.applicationContext

@@ -15,32 +15,31 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import android.view.KeyEvent
-import androidx.core.graphics.drawable.toBitmap
 import com.shilapi.xcertplay.airplay.CarPlayMediaButton
 import com.shilapi.xcertplay.host.R
-import com.shilapi.xcertplay.hud.BydOutputSettings
 import com.shilapi.xcertplay.media.CarPlayNowPlaying
 import com.shilapi.xcertplay.orchestration.CarPlayController
+import com.shilapi.xcertplay.simhub.SimHubEndpoints
 import java.util.concurrent.Executors
 import java.util.concurrent.Executor
 
 /**
  * Steering-wheel and other hardware media buttons for CarPlay.
  *
- * Android delivers media keys to a media session; BYD picks the session of the audio-focus
- * owner. Once CarPlay plays music, DiPlay holds audio focus and an active session until the
+ * Android delivers media keys to a media session; some head units pick the session of the
+ * audio-focus owner. Once CarPlay plays music, rigPlay holds audio focus and an active session until the
  * CarPlay session ends, so play also works after a pause. Keys go to the iPhone as CarPlay media
  * HID presses ([CarPlayMediaButton]).
  */
 internal object CarPlayMediaKeys {
-    private const val TAG = "DiPlay-MediaKeys"
+    private const val TAG = "rigPlay-MediaKeys"
     private const val ACTIONS = PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE or
         PlaybackState.ACTION_PLAY_PAUSE or PlaybackState.ACTION_SKIP_TO_NEXT or PlaybackState.ACTION_SKIP_TO_PREVIOUS
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private val artworkQueue = NowPlayingArtworkQueue(
         worker = Executors.newSingleThreadExecutor { task ->
-            Thread(task, "diplay-now-playing-artwork").apply { isDaemon = true }
+            Thread(task, "rigplay-now-playing-artwork").apply { isDaemon = true }
         },
         main = Executor { mainHandler.post(it) },
         decode = ::decodeArtwork,
@@ -54,11 +53,16 @@ internal object CarPlayMediaKeys {
     private var focusHeld = false
     private var appContext: Context? = null
     private var mediaAudioActive = false
+
+    /**
+     * False while CarPlay audio plays on the PC (#31): the session still takes the keys and shows the
+     * metadata, but nothing plays on this device, so it does not take audio focus from other apps.
+     */
+    @Volatile var audioFocusAllowed: () -> Boolean = { true }
     private var nowPlaying = CarPlayNowPlaying()
     private var elapsedUpdatedAt = 0L
     private var artwork: Bitmap? = null
     private val artworkCache = LinkedHashMap<Int, Bitmap?>()
-    private var placeholder: Bitmap? = null
 
     @Synchronized
     fun attach(context: Context, next: CarPlayController) {
@@ -71,6 +75,8 @@ internal object CarPlayMediaKeys {
         next.playbackListener = { playing -> onIphonePlaying(next, playing) }
         next.nowPlayingListener = { update -> onNowPlayingChanged(next, update) }
         next.artworkListener = { id, bytes -> onArtworkChanged(next, id, bytes) }
+        // SimHub media commands and now-playing status (#32) follow the same controller.
+        SimHubEndpoints.mediaBridge.attach(next)
     }
 
     /** Ends key handling for [expected]; a newer controller's state is left alone. */
@@ -80,6 +86,7 @@ internal object CarPlayMediaKeys {
         expected.playbackListener = null
         expected.nowPlayingListener = null
         expected.artworkListener = null
+        SimHubEndpoints.mediaBridge.detach(expected)
         controller = null
         releaseLocked()
     }
@@ -106,6 +113,7 @@ internal object CarPlayMediaKeys {
                 val previousArtwork = artwork
                 if (nowPlaying.artworkTransferId != update.artworkTransferId) {
                     artwork = nextArtwork(update.artworkTransferId, artworkCache, artwork)
+                    if (artwork !== previousArtwork) artwork?.let(SimHubArtworkPublisher::onArtwork)
                 }
                 if (nowPlaying.elapsedMillis != update.elapsedMillis) elapsedUpdatedAt = SystemClock.elapsedRealtime()
                 val metadataChanged = metadataChanged(nowPlaying, update) || artwork !== previousArtwork
@@ -114,7 +122,7 @@ internal object CarPlayMediaKeys {
                 // Republishing the metadata each time sent a copy of the artwork through system_server
                 // to every media listener, and on a DiLink 5.0 Tang that exhausted memory within
                 // minutes. The position goes in the playback state.
-                if (metadataChanged) session?.setMetadata(androidMetadata(update, shownArtworkLocked()))
+                if (metadataChanged) session?.setMetadata(androidMetadata(update, artwork))
                 publishPlaybackStateLocked()
             }
         }
@@ -137,7 +145,8 @@ internal object CarPlayMediaKeys {
         while (artworkCache.size > MAX_CACHED_ARTWORK) artworkCache.remove(artworkCache.keys.first())
         if (nowPlaying.artworkTransferId == id) {
             artwork = decoded
-            session?.setMetadata(androidMetadata(nowPlaying, shownArtworkLocked()))
+            decoded?.let(SimHubArtworkPublisher::onArtwork) // #47
+            session?.setMetadata(androidMetadata(nowPlaying, artwork))
         }
     }
 
@@ -146,7 +155,7 @@ internal object CarPlayMediaKeys {
     // would; only the start counts, so a car source picked while the iPhone plays on is not undone.
     private fun regainFocusLocked() {
         val request = focusRequest ?: return
-        if (focusHeld) return
+        if (focusHeld || !audioFocusAllowed()) return
         val audio = appContext?.getSystemService(AudioManager::class.java) ?: return
         focusHeld = audio.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         Log.i(TAG, "audio focus regained=$focusHeld")
@@ -175,12 +184,12 @@ internal object CarPlayMediaKeys {
                 if (change == AudioManager.AUDIOFOCUS_LOSS) synchronized(this) { focusHeld = false }
             }, mainHandler)
             .build()
-        val granted = audio?.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        val granted = audioFocusAllowed() && audio?.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         focusRequest = request
         focusHeld = granted
-        session = MediaSession(context, "DiPlay CarPlay").apply {
+        session = MediaSession(context, "rigPlay CarPlay").apply {
             setCallback(callback, mainHandler)
-            setMetadata(androidMetadata(nowPlaying, shownArtworkLocked()))
+            setMetadata(androidMetadata(nowPlaying, artwork))
             isActive = true
         }
         Log.i(TAG, "media keys active focusGranted=$granted")
@@ -225,18 +234,12 @@ internal object CarPlayMediaKeys {
     }
 
     private fun send(index: Int, source: String) {
-        // While the car's video player is on screen the wheel drives it: a CarPlay play/pause would
-        // make the iPhone end the video session.
-        if (CarPlayVideo.onMediaKey(index)) {
-            Log.i(TAG, "media key $source -> car video player $index")
-            return
-        }
         val sent = synchronized(this) { controller }?.sendMediaButton(index) ?: false
         Log.i(TAG, "media key $source -> CarPlay $index sent=$sent")
     }
 
     private val callback = CarPlayMediaCallback(
-        experimentalDiLink3Keys = { appContext?.let(BydOutputSettings::carPlayCallControls) == true },
+        experimentalDiLink3Keys = { false },
         send = ::send,
     )
 
@@ -263,17 +266,9 @@ internal object CarPlayMediaKeys {
             }
         }.build()
 
-    // Without art the car draws DiPlay's bright launcher icon instead.
-    private fun shownArtworkLocked(): Bitmap? =
-        artwork ?: placeholder ?: appContext?.let(::placeholderArt)?.also { placeholder = it }
-
-    internal fun placeholderArt(context: Context): Bitmap? = context
-        .getDrawable(R.drawable.art_now_playing_placeholder)
-        ?.toBitmap(MAX_ARTWORK_DIMENSION, MAX_ARTWORK_DIMENSION)
-
     /**
      * The art to show once the iPhone names transfer [id]. A pending transfer keeps [current], so the
-     * placeholder does not flash between tracks.
+     * art does not blank between tracks.
      */
     internal fun nextArtwork(id: Int?, cache: Map<Int, Bitmap?>, current: Bitmap?): Bitmap? = when {
         id == null -> null

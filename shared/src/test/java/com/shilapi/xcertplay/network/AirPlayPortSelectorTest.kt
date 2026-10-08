@@ -96,4 +96,51 @@ class AirPlayPortSelectorTest {
             }
         }
     }
+
+    @Test fun bindAllPutsEveryAddressOnTheSamePort() {
+        val second = InetAddress.getByName("127.0.0.2")
+        val bindable = try {
+            ServerSocket().use { it.bind(InetSocketAddress(second, 0)) }
+            true
+        } catch (_: java.io.IOException) {
+            false
+        }
+        assumeTrue("Host has no second loopback address", bindable)
+        val preferred = freePort()
+        val servers = AirPlayPortSelector.bindAll(listOf(loopback, second), preferred, emptyList())
+        try {
+            assertEquals(2, servers.size)
+            assertEquals(listOf(preferred, preferred), servers.map { it.localPort })
+            assertEquals(listOf(loopback, second), servers.map { it.inetAddress })
+        } finally {
+            servers.forEach { it.close() }
+        }
+    }
+
+    @Test fun bindAllMovesEveryAddressWhenOneOfThemIsBusy() {
+        val second = InetAddress.getByName("127.0.0.2")
+        val bindable = try {
+            ServerSocket().use { it.bind(InetSocketAddress(second, 0)) }
+            true
+        } catch (_: java.io.IOException) {
+            false
+        }
+        assumeTrue("Host has no second loopback address", bindable)
+        ServerSocket().use { other ->
+            other.bind(InetSocketAddress(second, 0))
+            val busy = other.localPort
+            var fallback: Pair<Int, Int>? = null
+            val servers = AirPlayPortSelector.bindAll(listOf(loopback, second), busy, emptyList()) { b, bound ->
+                fallback = b to bound
+            }
+            try {
+                val port = servers.first().localPort
+                assertNotEquals(busy, port)
+                assertEquals(listOf(port, port), servers.map { it.localPort })
+                assertEquals(busy to port, fallback)
+            } finally {
+                servers.forEach { it.close() }
+            }
+        }
+    }
 }

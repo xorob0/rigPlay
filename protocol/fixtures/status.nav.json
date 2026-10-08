@@ -1,0 +1,13 @@
+{
+  "type": "status",
+  "phoneConnected": true,
+  "phoneName": "Tim's iPhone",
+  "screen": "carplay",
+  "nowPlaying": null,
+  "nav": {
+    "maneuver": "slightRightTurn",
+    "distanceM": 350,
+    "road": "B258",
+    "etaEpochS": 1791044100
+  }
+}

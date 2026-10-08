@@ -24,14 +24,14 @@ fun interface VehicleStatusProvider {
 
 /** The charging inlets the car declares, as iAP2 SupportedChargingConnectors values. */
 enum class EvChargingConnectors(internal vararg val wireValues: Int) {
-    CCS2_TYPE2(1, 4), // CCS2 (DC) and Mennekes / Type 2 (AC), as on European BYD models
+    CCS2_TYPE2(1, 4), // CCS2 (DC) and Mennekes / Type 2 (AC), as on most European EVs
     GB_T(5, 6), // GB/T DC and AC, as on Chinese-market models
     CCS1_J1772(0, 2), // CCS1 (DC) and J1772 (AC)
 }
 
 /**
  * The identification to send: an electric vehicle is declared only while [provider] has a battery
- * reading, so the iPhone is never told about an EV that DiPlay cannot report (adb off or not
+ * reading, so the iPhone is never told about an EV that rigPlay cannot report (adb off or not
  * approved, or a car without these properties). Reads the provider's cached value; never blocks.
  */
 fun Iap2IdentificationConfig.withVehicleStatusFrom(provider: VehicleStatusProvider?): Iap2IdentificationConfig =
@@ -49,6 +49,11 @@ object Iap2VehicleStatus {
     const val STOP_VEHICLE_STATUS_UPDATES = 0xA102
     const val UPDATE_INTERVAL_MILLIS = 30_000L
 
+    // Open question (#46): the only EngineType value this codebase knows is 2 (electric), and nothing in
+    // it says which values mean gasoline, diesel or hybrid, so a fuel car (the SimHub rig) is declared as
+    // an EV. Before adding other values, confirm them against Apple's iAP2 spec (VehicleInformation,
+    // EngineType) and check on an iPhone that Maps accepts them, and what it shows with only the
+    // non-electric Range/RangeWarning fields of group 21. Until then the vehicle plane stays opt-in.
     private const val ENGINE_TYPE_ELECTRIC = 2
 
     /** IdentificationInformation params 20 (VehicleInformation) and 21 (VehicleStatus). */

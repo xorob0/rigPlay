@@ -44,12 +44,12 @@ import androidx.media3.ui.R as Media3R
 import kotlin.math.roundToInt
 
 /**
- * The car's own player for iOS 27 video in car (see [CarPlayVideo]). Full screen over CarPlay, which
+ * The tablet's own player for iOS 27 video in car (see [CarPlayVideo]). Full screen over CarPlay, which
  * stays connected underneath; a tap shows Back to CarPlay, play/pause, 10 s back and forward and the
- * time bar for a few seconds.
+ * time bar for a few seconds. Its sound plays on the tablet, not through the PC audio path.
  *
- * Media3 ExoPlayer parses media in the app: the head unit's own MP4 parser aborted on progressive
- * Safari video on a DiLink 5.0 Tang. URLs the car cannot load (an app's own scheme, app-served AES-128
+ * Media3 ExoPlayer parses media in the app: a head unit's own MP4 parser aborted on progressive
+ * Safari video (upstream DiPlay, DiLink 5.0). URLs the tablet cannot load (an app's own scheme, app-served AES-128
  * keys) go to the iPhone (IphoneResolvingDataSource). The HLS encryption is logged, without URLs, so a
  * protected item that cannot play here is easy to tell apart.
  */
@@ -345,7 +345,7 @@ class CarPlayVideoActivity : Activity() {
     private fun dp(value: Int) = (value * resources.displayMetrics.density).roundToInt()
 
     private companion object {
-        const val TAG = "DiPlay-Video"
+        const val TAG = "rigPlay-Video"
         const val CONTROLS_MILLIS = 5_000L
         const val TICK_MILLIS = 500L
     }

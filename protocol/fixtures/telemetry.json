@@ -1,0 +1,16 @@
+{
+  "type": "telemetry",
+  "speedMps": 41.7,
+  "gear": "D",
+  "heading": 274.5,
+  "lat": 50.3356,
+  "lon": 6.9475,
+  "alt": 617.0,
+  "night": false,
+  "fuelPercent": 63.2,
+  "rangeKm": 148.0,
+  "rpm": 6120,
+  "trackName": "Nürburgring Nordschleife",
+  "sessionType": "Practice",
+  "gameRunning": true
+}

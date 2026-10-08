@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="audio_simhub_output">Audio output</string>
+    <string name="audio_simhub_output_pc">PC via SimHub</string>
+    <string name="audio_simhub_output_tablet">This tablet</string>
+    <string name="audio_simhub_output_note">With PC via SimHub, music, Siri and calls play on the PC while rigPlay is linked to SimHub, and on this tablet when it is not.</string>
+</resources>

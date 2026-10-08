@@ -1,0 +1,146 @@
+{
+  "type": "cross-contract",
+  "description": "Cross-codec contract vectors (CF-6). Each vector carries a raw control-channel JSON line (wire) and the verdict expected on each side: csharp = MessageCodec.TryDecode result, kotlin = SimHubProtocol.parse result. A verdict mismatch between the two codecs breaks at least one of the two mirror suites. Locks the DIM-1 (status.nav lenient), DIM-2 (hostId 1-128 in beacon/welcome) and DIM-3 corrections. DIM-3 (PCM payload > 8192) is a binary datagram, not a control line, and is covered separately by audio-header.json invalid[] on both sides; no binary vector is added here. docs/protocol.md is the authority.",
+  "vectors": [
+    {
+      "name": "status-nav-wrong-type-maneuver",
+      "wire": "{\"type\":\"status\",\"phoneConnected\":true,\"screen\":\"carplay\",\"nowPlaying\":null,\"nav\":{\"maneuver\":5}}",
+      "csharp": "accept",
+      "kotlin": "accept",
+      "note": "DIM-1 (§6.7.1): nav.maneuver is a number, nav is ignored, the status stays valid on both sides."
+    },
+    {
+      "name": "status-nav-missing-maneuver",
+      "wire": "{\"type\":\"status\",\"phoneConnected\":true,\"screen\":\"carplay\",\"nowPlaying\":null,\"nav\":{\"distanceM\":5}}",
+      "csharp": "accept",
+      "kotlin": "accept",
+      "note": "DIM-1 (§6.7.1): nav without maneuver is dropped, the status stays valid on both sides."
+    },
+    {
+      "name": "status-nav-not-an-object",
+      "wire": "{\"type\":\"status\",\"phoneConnected\":true,\"screen\":\"carplay\",\"nowPlaying\":null,\"nav\":5}",
+      "csharp": "accept",
+      "kotlin": "accept",
+      "note": "DIM-1 (§6.7.1): nav is not an object, no route guidance, the status stays valid on both sides."
+    },
+    {
+      "name": "status-nav-valid",
+      "wire": "{\"type\":\"status\",\"phoneConnected\":true,\"screen\":\"carplay\",\"nowPlaying\":null,\"nav\":{\"maneuver\":\"slightRightTurn\",\"distanceM\":350,\"road\":\"B258\",\"etaEpochS\":1791044100}}",
+      "csharp": "accept",
+      "kotlin": "accept",
+      "note": "Boundary: a complete valid nav is accepted on both sides."
+    },
+    {
+      "name": "welcome-hostId-empty",
+      "wire": "{\"type\":\"welcome\",\"hostId\":\"\",\"name\":\"RIG-PC\",\"version\":\"0.1.0\",\"protocol\":1,\"features\":[\"telemetry\"]}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "DIM-2: welcome hostId must be 1-128 chars; empty is rejected on both sides."
+    },
+    {
+      "name": "welcome-hostId-over-128",
+      "wire": "{\"type\":\"welcome\",\"hostId\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"name\":\"RIG-PC\",\"version\":\"0.1.0\",\"protocol\":1,\"features\":[\"telemetry\"]}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "DIM-2: welcome hostId of 129 chars exceeds the 1-128 bound; rejected on both sides."
+    },
+    {
+      "name": "beacon-hostId-empty",
+      "wire": "{\"type\":\"beacon\",\"name\":\"RIG-PC\",\"hostId\":\"\",\"version\":\"0.1.0\",\"controlPort\":23711,\"audioPort\":23712,\"protocol\":1}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "DIM-2: beacon hostId must be 1-128 chars; empty is rejected on both sides."
+    },
+    {
+      "name": "beacon-hostId-over-128",
+      "wire": "{\"type\":\"beacon\",\"name\":\"RIG-PC\",\"hostId\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"version\":\"0.1.0\",\"controlPort\":23711,\"audioPort\":23712,\"protocol\":1}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "DIM-2: beacon hostId of 129 chars exceeds the 1-128 bound; rejected on both sides."
+    },
+    {
+      "name": "welcome-hostId-128-ok",
+      "wire": "{\"type\":\"welcome\",\"hostId\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"name\":\"RIG-PC\",\"version\":\"0.1.0\",\"protocol\":1,\"features\":[\"telemetry\"]}",
+      "csharp": "accept",
+      "kotlin": "accept",
+      "note": "DIM-2 upper bound: welcome hostId of exactly 128 chars is accepted on both sides."
+    },
+    {
+      "name": "welcome-hostId-1-ok",
+      "wire": "{\"type\":\"welcome\",\"hostId\":\"a\",\"name\":\"RIG-PC\",\"version\":\"0.1.0\",\"protocol\":1,\"features\":[\"telemetry\"]}",
+      "csharp": "accept",
+      "kotlin": "accept",
+      "note": "DIM-2 lower bound: welcome hostId of 1 char is accepted on both sides."
+    },
+    {
+      "name": "hello-missing-tabletId",
+      "wire": "{\"type\":\"hello\",\"name\":\"Lenovo Tab P11\",\"appVersion\":\"0.3.0\",\"protocol\":1}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "§6.1: required tabletId missing; rejected on both sides."
+    },
+    {
+      "name": "hello-protocol-zero",
+      "wire": "{\"type\":\"hello\",\"tabletId\":\"9b1e4d2c-5a7f-4e3b-8c61-2f0a9d4b7e18\",\"name\":\"Lenovo Tab P11\",\"appVersion\":\"0.3.0\",\"protocol\":0}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "§7.1: protocol must be >= 1; rejected on both sides."
+    },
+    {
+      "name": "pairRequest-token-and-pin",
+      "wire": "{\"type\":\"pairRequest\",\"token\":\"q3Z2b0x9V1mN8pR4sT6uW7yA5cE1gH3jK2lM0nO9pQ8\",\"pin\":\"048291\"}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "§6.3: token and pin together is rejected on both sides."
+    },
+    {
+      "name": "pairResult-ok-without-token",
+      "wire": "{\"type\":\"pairResult\",\"ok\":true}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "§6.4: ok:true requires a token; rejected on both sides."
+    },
+    {
+      "name": "state-missing-audio",
+      "wire": "{\"type\":\"state\",\"dashboardUrl\":\"http://192.168.1.20:8888/Dash#Pit%20Board\"}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "§6.6: required audio missing; rejected on both sides."
+    },
+    {
+      "name": "status-unknown-screen",
+      "wire": "{\"type\":\"status\",\"phoneConnected\":true,\"screen\":\"projector\",\"nowPlaying\":null}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "§6.7: screen value projector is not defined; rejected on both sides."
+    },
+    {
+      "name": "command-unknown-action",
+      "wire": "{\"type\":\"command\",\"command\":\"media\",\"action\":\"shuffle\"}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "§6.8: action value shuffle is not defined; rejected on both sides."
+    },
+    {
+      "name": "type-unknown",
+      "wire": "{\"type\":\"selfDestruct\"}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "§14.2: unknown message type; rejected on both sides (UnknownType / Unknown)."
+    },
+    {
+      "name": "heartbeat-seq-negative",
+      "wire": "{\"type\":\"heartbeat\",\"seq\":-1}",
+      "csharp": "reject",
+      "kotlin": "reject",
+      "note": "Boundary: heartbeat seq below 0 is out of range; rejected on both sides."
+    },
+    {
+      "name": "heartbeat-valid",
+      "wire": "{\"type\":\"heartbeat\",\"seq\":42}",
+      "csharp": "accept",
+      "kotlin": "accept",
+      "note": "Boundary: a minimal valid heartbeat is accepted on both sides."
+    }
+  ]
+}

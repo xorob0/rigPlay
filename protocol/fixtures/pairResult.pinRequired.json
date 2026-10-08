@@ -1,0 +1,6 @@
+{
+  "type": "pairResult",
+  "ok": false,
+  "reason": "pinRequired",
+  "pinExpiresInSec": 120
+}

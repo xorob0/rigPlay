@@ -16,7 +16,7 @@ import org.robolectric.annotation.Implements
 import org.robolectric.annotation.Implementation
 
 /**
- * The connection settings screen lives in [DiPlayActivity] and comes back to the projection screen
+ * The connection settings screen lives in [RigPlayActivity] and comes back to the projection screen
  * with FLAG_ACTIVITY_REORDER_TO_FRONT, so the projection screen is resumed, not recreated.
  * Settings saved while it was in the background must reach the next handshake.
  */
@@ -35,7 +35,7 @@ class HostConnectionSettingsRefreshTest {
         val host = Robolectric.buildActivity(CarPlayHostActivity::class.java).setup()
         assertEquals(WirelessHotspotMode.MANUAL, runtimeConfig(host.get()).wirelessHotspotMode)
 
-        // The user switches to a car hotspot with another name while the projection screen lives on.
+        // The user switches to Wi-Fi Direct and renames the saved hotspot while the projection screen lives on.
         AirPlayPersistence.saveWirelessHotspotMode(app, WirelessHotspotMode.WIFI_P2P)
         AirPlayPersistence.saveManualHotspotSsid(app, "New car")
         AirPlayPersistence.saveWifiP2pPreferredChannel(app, 149)
@@ -55,8 +55,8 @@ class HostConnectionSettingsRefreshTest {
             .apply { isAccessible = true }.invoke(host) as CarPlayRuntimeConfig
     }
 
-    /** The projection screen must start without the private MFi identity used by real cars. */
-    @Implements(DiPlayBootstrap::class, isInAndroidSdk = false)
+    /** The projection screen must start without the private MFi identity used by real devices. */
+    @Implements(RigPlayBootstrap::class, isInAndroidSdk = false)
     internal class Bootstrap {
         @Implementation fun ensure(context: Context) = Unit
 

@@ -41,7 +41,7 @@ internal class LocalOnlyHotspotRadioInfo(private val wifi: WifiManager) : Closea
                 when (method.name) {
                     "hashCode" -> System.identityHashCode(self)
                     "equals" -> self === args?.firstOrNull()
-                    "toString" -> "DiPlay local hotspot radio observer"
+                    "toString" -> "rigPlay local hotspot radio observer"
                     "onInfoChanged" -> {
                         val infos = (args?.firstOrNull() as? List<*>) ?: listOfNotNull(args?.firstOrNull())
                         val radios = infos.mapNotNull { info ->
@@ -103,7 +103,7 @@ internal class LocalOnlyHotspotRadioInfo(private val wifi: WifiManager) : Closea
     }
 
     companion object {
-        // DiLink briefly reports the requested channel, then the driver moves it ~1s later.
+        // Some firmware briefly reports the requested channel, then the driver moves it ~1s later.
         // Do not send those transient channel details to the phone during its Wi-Fi handshake.
         fun settledRadio(radios: List<Radio>, bssid: String?, unchangedMillis: Long): Radio? =
             if (unchangedMillis >= 2_000) matchingRadio(radios, bssid) else null

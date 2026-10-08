@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="picture_adjustments">Picture adjustments</string>
-    <string name="picture_live_hint">Live on the main CarPlay video. Changes save immediately. Original is a temporary comparison.</string>
+    <string name="picture_live_hint">Applied live to the CarPlay picture on the tablet, for example to match the rig’s lighting. Changes save immediately; Show original is a temporary comparison.</string>
     <string name="picture_show_original">Show original</string>
     <string name="picture_done">Done</string>
     <string name="picture_brightness">Brightness</string>

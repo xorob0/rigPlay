@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- A test sender for the plugin's audio receiver (#24): streams a WAV file or a sine tone as protocol audio
+       datagrams (docs/protocol.md §10), with optional simulated loss. Shares the header codec with the plugin.
+       Not part of CI; `dotnet build plugin/tools/AudioSender`. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>AudioSender</AssemblyName>
+    <RootNamespace>RigPlayPlugin.Tools.AudioSender</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../RigPlay/Audio/AudioHeader.cs" Link="Shared/AudioHeader.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Encodes the Opus stream (the opus option, docs/protocol.md §10.4) with the same codec the plugin decodes with. -->
+    <PackageReference Include="Concentus" Version="2.2.2" />
+  </ItemGroup>
+</Project>

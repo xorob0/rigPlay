@@ -327,6 +327,7 @@ class Iap2WirelessCarPlayEndpoint(
     val deviceIdentifier: String,
     val publicKey: String,
     val sourceVersion: String,
+    /** Router BSSID hint for 0x5703 (existing-network mode); never the receiver's AirPlay identity. */
     accessPointBssid: ByteArray? = null,
 ) {
     val ipAddresses: List<String> = ipAddresses.toList()
@@ -351,6 +352,7 @@ class Iap2WirelessCarPlayEndpoint(
         require(publicKey.isNotEmpty()) { "publicKey is required and must not be empty" }
         require('\u0000' !in publicKey) { "publicKey must not contain U+0000" }
         require(sourceVersion.isNotEmpty()) { "sourceVersion is required and must not be empty" }
+        require(accessPointBssid == null || accessPointBssid.size == 6) { "AP address must contain six bytes" }
         require('\u0000' !in sourceVersion) { "sourceVersion must not contain U+0000" }
     }
 }

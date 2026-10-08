@@ -1,0 +1,11 @@
+{
+  "type": "telemetry",
+  "speedMps": 0.0,
+  "gear": "P",
+  "heading": null,
+  "lat": null,
+  "lon": null,
+  "night": true,
+  "trackName": "Spa-Francorchamps",
+  "gameRunning": true
+}

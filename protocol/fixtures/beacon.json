@@ -1,0 +1,11 @@
+{
+  "type": "beacon",
+  "name": "RIG-PC",
+  "hostId": "3f6c2a4e-8d1b-4c7a-9e55-0b2d7f1a6c90",
+  "version": "0.1.0",
+  "simhubVersion": "9.12.6",
+  "controlPort": 23711,
+  "audioPort": 23712,
+  "protocol": 1,
+  "minProtocol": 1
+}

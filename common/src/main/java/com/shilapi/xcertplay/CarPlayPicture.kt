@@ -9,6 +9,8 @@ import android.view.TextureView
 
 /** Pixel adjustments for CarPlay video textures, not Android or OEM UI. */
 internal object CarPlayPicture {
+    /** Intent extra that opens the adjustments panel over CarPlay (from the rigPlay settings screen). */
+    const val EXTRA_OPEN_PANEL = "picture_controls"
     const val BRIGHTNESS = "brightness"
     const val CONTRAST = "contrast"
     const val SATURATION = "saturation"

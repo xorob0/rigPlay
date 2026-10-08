@@ -1,15 +1,44 @@
 # Privacy and diagnostics
 
-DiPlay's product flow uses local authentication and a direct USB/Wi-Fi connection to the iPhone. No account, remote authentication service or automatic diagnostic upload is used. The iPhone's CarPlay apps have their own internet and privacy behavior.
+rigPlay has no account, no server and no analytics. The tablet talks to the iPhone directly (Wi-Fi Direct,
+Bluetooth or USB) and to the SimHub plugin on your home network. Nothing is uploaded automatically. The
+iPhone's CarPlay apps have their own internet and privacy behaviour.
 
-The head unit stores app preferences, paired-device selections, pairing data and bounded diagnostic logs in app storage. Authentication and pairing material are kept out of Android backup. Uninstalling removes app-private data; exported reports in Downloads remain until you delete them.
+## What is stored
 
-Diagnostic export is initiated by you. Reports include app/device versions, display settings and negotiation, connection transitions, Wi-Fi band/channel and state, and decoder recovery events. The exporter filters protocol payloads, credential-bearing lines and common identifiers. Redaction cannot promise to recognize every vendor-specific string: review reports before posting them publicly. A GitHub issue is public.
+On the tablet, in app storage: settings, the selected iPhone, pairing data for the iPhone and for the PC
+(including the token the PC issued), and bounded diagnostic logs. Authentication and pairing material are
+kept out of Android backup. Uninstalling removes app storage; reports you saved to Downloads stay until you
+delete them.
 
-When the document picker or Downloads storage is unavailable, reports save under `Android/data/<package>/files/diagnostic-reports/` on primary external storage without requesting storage permission. The confirmation shows the actual TXT file path. The release package is `com.shihab.diplay`; debug builds use `com.shihab.diplay.hudtest`. File managers on newer Android versions may restrict access to `Android/data`; use **View** or **Share** in DiPlay instead. If external storage is also unavailable, reports save in private app storage. Each fallback location retains its newest eight exports, and uninstalling removes them. Sharing grants read access to the selected report only; nothing is sent automatically. On Android 9 and older, other apps with storage permission may be able to read the external reports.
+On the PC, in SimHub's `PluginsData\Common\RigPlay.RigPlaySettings.json`: the plugin's settings, the chosen
+dashboards and audio device, and for each paired tablet its ID, name, pairing date and a SHA-256 hash of
+its token. Log lines in SimHub's log are prefixed `[rigPlay]` and never contain a full token.
 
-Microphone access supports Siri and calls. Bluetooth/Nearby devices and Wi-Fi/Location permissions support discovery and transport. The optional local VPN permission supports the USB link; it does not provide a remote internet VPN.
+## What crosses your network
 
-The verified DiLink 5.1 cluster profile optionally uses Android Usage Access to follow theme and mini-map-card visibility. This permission exposes app-activity history. DiPlay filters the results to four stock BYD cluster activities, processes them locally, and logs only inferred cluster theme/visibility changes. Unrelated activity events are not retained or uploaded. Automatic mode is opt-in; disabling it stops these queries. Usage Access can also be revoked as described in [BYD navigation](BYD_NAVIGATION.md#dilink-51-theme-profile).
+- The plugin broadcasts a discovery beacon on the local network with the PC's name, a random host ID, the
+  SimHub version and its ports.
+- The control channel between tablet and PC carries pairing, status and now-playing metadata (title,
+  artist, album, app). CarPlay audio is sent from the tablet to the PC.
+- Protocol 1 is **not encrypted**. Anyone on the same network can read the control channel, including the
+  pairing token and now-playing metadata, and can capture the audio. The plugin accepts connections only
+  from private and link-local addresses. Use rigPlay on a home network you trust. The reasons and limits
+  are in [docs/protocol.md §15](protocol.md#15-security).
 
-The static website has no analytics script or account. GitHub Pages, GitHub and Telegram apply their own policies when you use those services.
+## Diagnostic reports
+
+You start a diagnostic export yourself (**Settings → Diagnostics → Save diagnostic report**). Reports
+include app and device versions, display settings, connection transitions, Wi-Fi band, channel and state,
+and decoder recovery events. The exporter filters protocol payloads, credential-bearing lines and common
+identifiers. Redaction cannot recognise every vendor-specific string: review a report before posting it.
+A GitHub issue is public.
+
+## Permissions
+
+- Nearby devices (and Location on older Android): Bluetooth and Wi-Fi Direct discovery and connection.
+- Microphone: Siri and calls.
+- Notifications: connection controls in the foreground notification.
+- Local VPN (optional): carries the USB link to the iPhone. It is not an internet VPN.
+
+GitHub applies its own policies when you download releases or open issues.

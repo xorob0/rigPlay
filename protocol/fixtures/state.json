@@ -1,0 +1,16 @@
+{
+  "type": "state",
+  "dashboardUrl": "http://192.168.1.20:8888/Dash#Pit%20Board",
+  "idleDashboardUrl": "http://192.168.1.20:8888/Dash#Rig%20Clock",
+  "dashboardServer": {
+    "reachable": true,
+    "port": 8888
+  },
+  "audio": {
+    "enabled": true,
+    "port": 23712,
+    "formats": [
+      "pcm_s16le"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+<Project>
+  <!-- Shared by plugin/RigPlay and plugin/RigPlay.Tests. The version comes from the root VERSION file,
+       the one version of the project (also read by mobile/build.gradle.kts and checked against the release
+       tag); it is the assembly, file and informational version of RigPlay.dll. -->
+  <PropertyGroup>
+    <Version>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)../VERSION').Trim())</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Authors>xorob0</Authors>
+    <Company>rigPlay contributors</Company>
+    <Product>rigPlay</Product>
+    <Copyright>GPL-3.0. rigPlay contributors.</Copyright>
+  </PropertyGroup>
+</Project>

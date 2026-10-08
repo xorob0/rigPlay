@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SimHub onboarding, rig home, lifecycle and dashboard strings (#27–#30). English only for now. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <!-- Onboarding (#27) -->
+    <string name="rig_simhub_title">Connect rigPlay to SimHub</string>
+    <string name="rig_simhub_intro">Start SimHub with the rigPlay plugin on your PC. PCs on this network appear below.</string>
+    <string name="rig_simhub_searching">Looking for SimHub on this network…</string>
+    <string name="rig_simhub_discovery_unavailable">Automatic discovery is unavailable (%1$s). Enter the address manually.</string>
+    <string name="rig_simhub_host_details">%1$s · plugin %2$s</string>
+    <string name="rig_simhub_host_details_simhub">%1$s · SimHub %2$s · plugin %3$s</string>
+    <string name="rig_simhub_host_incompatible">Incompatible version: update rigPlay and the SimHub plugin</string>
+    <string name="rig_simhub_enter_manually">Enter address manually</string>
+    <string name="rig_simhub_address_title">SimHub PC address</string>
+    <string name="rig_simhub_address_hint">192.168.1.20 or 192.168.1.20:23711</string>
+    <string name="rig_simhub_address_invalid">Enter an IP address or host name, optionally followed by :port.</string>
+    <string name="rig_simhub_connect">Connect</string>
+    <string name="rig_simhub_connecting">Connecting to %1$s…</string>
+    <string name="rig_simhub_waiting_pin">Asking %1$s for a PIN…</string>
+    <string name="rig_simhub_enter_pin_title">Enter the PIN shown on the PC</string>
+    <string name="rig_simhub_enter_pin_body">SimHub on %1$s now shows a 6-digit PIN on the rigPlay plugin page.</string>
+    <string name="rig_simhub_pin_expires">The PIN is valid for %1$d seconds.</string>
+    <string name="rig_simhub_pin_hint">6-digit PIN</string>
+    <string name="rig_simhub_pair">Pair</string>
+    <string name="rig_simhub_checking_pin">Checking the PIN…</string>
+    <string name="rig_simhub_new_pin">Show a new PIN</string>
+    <string name="rig_simhub_error_wrong_pin">Wrong PIN. Attempts left: %1$d</string>
+    <string name="rig_simhub_error_wrong_pin_plain">Wrong PIN. Try again.</string>
+    <string name="rig_simhub_error_pin_expired">The PIN expired. Ask the PC for a new one.</string>
+    <string name="rig_simhub_error_too_many">Too many wrong PINs. Ask the PC for a new one.</string>
+    <string name="rig_simhub_error_denied">Refused on the PC.</string>
+    <string name="rig_simhub_error_unreachable">Could not reach %1$s. Check that SimHub is running with the rigPlay plugin, that the PC is on this network, and that Windows Firewall allows SimHub on private networks.</string>
+    <string name="rig_simhub_error_incompatible">%1$s runs an incompatible plugin version. Update rigPlay and the SimHub plugin.</string>
+    <string name="rig_simhub_retry">Try again</string>
+    <string name="rig_simhub_choose_other">Choose another PC</string>
+    <string name="rig_simhub_later">Set up later</string>
+    <string name="rig_simhub_paired_toast">Paired with %1$s</string>
+    <string name="rig_simhub_unpaired_toast">SimHub pairing removed. Pair again to use rigPlay with SimHub.</string>
+
+    <!-- SimHub status, shared by Settings and Home -->
+    <string name="rig_simhub_status_connected">Connected to %1$s</string>
+    <string name="rig_simhub_status_searching">Searching for %1$s…</string>
+    <string name="rig_simhub_status_incompatible">%1$s runs an incompatible plugin version</string>
+    <string name="rig_simhub_status_not_paired">Not paired with a SimHub PC</string>
+
+    <!-- Settings → SimHub (#27) -->
+    <string name="rig_settings_simhub">SimHub</string>
+    <string name="rig_settings_simhub_paired">Paired PC: %1$s (%2$s)</string>
+    <string name="rig_settings_simhub_reconnect">Reconnect</string>
+    <string name="rig_settings_simhub_forget">Forget this PC</string>
+    <string name="rig_settings_simhub_forget_title">Forget %1$s?</string>
+    <string name="rig_settings_simhub_forget_body">rigPlay deletes its pairing with this PC and returns to setup. To remove the tablet on the PC too, use the rigPlay page in SimHub.</string>
+    <string name="rig_settings_simhub_pair">Pair with SimHub</string>
+    <string name="rig_settings_simhub_advanced">Advanced: ports</string>
+    <string name="rig_settings_simhub_control_port">Control port (TCP) · %1$d</string>
+    <string name="rig_settings_simhub_discovery_port">Discovery port (UDP) · %1$d</string>
+    <string name="rig_settings_simhub_port_invalid">Enter a port between 1 and 65535.</string>
+    <string name="rig_settings_simhub_ports_note">Change these only if you changed them in the plugin. The control port is used for addresses entered without a port; a paired PC\'s port follows its beacon.</string>
+
+    <!-- Rig home and tablet settings (#28) -->
+    <string name="rig_home_simhub_label">SIMHUB</string>
+    <string name="rig_home_phone_label">IPHONE</string>
+    <string name="rig_home_phone_connected">%1$s connected</string>
+    <string name="rig_home_phone_connecting">Connecting to %1$s…</string>
+    <string name="rig_home_phone_waiting">Waiting for %1$s</string>
+    <string name="rig_home_phone_none">No iPhone chosen yet</string>
+    <string name="rig_rigplay_home">rigPlay home</string>
+    <string name="rig_open_after_boot">Open rigPlay when the tablet starts</string>
+    <string name="rig_open_after_boot_desc">Brings rigPlay back to the screen after a reboot.</string>
+    <string name="rig_connect_automatically_desc">Uses your last connection type and selected iPhone. With a paired SimHub PC, the iPhone connects whenever SimHub is running.</string>
+
+    <!-- Lifecycle coupling (#29) -->
+    <string name="rig_manual_connect_simhub_down">SimHub is not running: CarPlay audio stays on the tablet.</string>
+    <string name="rig_waiting_for_simhub">Waiting for SimHub. CarPlay starts when the PC is back.</string>
+    <string name="rig_notification_text">%1$s · %2$s</string>
+    <string name="rig_notification_phone_connected">iPhone connected</string>
+    <string name="rig_notification_phone_connecting">Connecting iPhone</string>
+    <string name="rig_notification_simhub_connected">SimHub: %1$s</string>
+    <string name="rig_notification_simhub_waiting">Waiting for SimHub</string>
+    <string name="rig_notification_simhub_unpaired">SimHub not paired</string>
+
+    <!-- SimHub dashboard (#30) -->
+    <string name="rig_dashboard_simhub">SimHub</string>
+    <string name="rig_dashboard_carplay">CarPlay</string>
+    <!-- Settings → CarPlay icon, when no custom icon is chosen and SimHub's icon was fetched from the PC (#52). -->
+    <string name="rig_simhub_carplay_icon">SimHub icon, from the PC</string>
+    <string name="rig_dashboard_retry">Retry</string>
+    <string name="rig_dashboard_no_dashboard">No dashboard selected on the PC. Choose one on the rigPlay page in SimHub.</string>
+    <string name="rig_dashboard_server_off">SimHub\'s web dash server is off. Turn it on in SimHub: Settings → Web dash server.</string>
+    <string name="rig_dashboard_unreachable">Could not load %1$s. SimHub\'s web dash server is off or blocked: Settings → Web dash server, and allow SimHub on private networks in Windows Firewall.</string>
+    <string name="rig_dashboard_disconnected">SimHub is not connected. The dashboard appears when the PC is back.</string>
+    <string name="rig_dashboard_not_paired">Pair rigPlay with SimHub to show its dashboards.</string>
+</resources>

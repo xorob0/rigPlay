@@ -1,11 +1,15 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
 }
 
 // Optional local-only input. CI and ordinary source builds contain no accessory identity.
-val localAuthenticationAssets = providers.environmentVariable("DIPLAY_AUTH_ASSETS_DIR")
+val localAuthenticationAssets = providers.environmentVariable("RIGPLAY_AUTH_ASSETS_DIR")
     .orNull?.let { file(it).canonicalFile }
+
+// The root VERSION file is the one version of the project: the APK, the SimHub plugin
+// (plugin/Directory.Build.props) and the release tag (.github/workflows/release.yml) all read it.
+val rigPlayVersion = providers.fileContents(layout.settingsDirectory.file("VERSION"))
+    .asText.map { it.trim() }
 
 android {
     namespace = "com.shilapi.xcertplay"
@@ -14,12 +18,12 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.shihab.diplay"
+        applicationId = "io.xorob.rigplay"
         minSdk = 28
         targetSdk = 37
-        versionCode = 32
-        versionName = "0.2.13"
-
+        // Bumped by hand for every release (it must grow for Android to accept an update).
+        versionCode = 4
+        versionName = rigPlayVersion.get()
     }
 
 
@@ -38,39 +42,26 @@ android {
     }
 
     buildTypes {
-        debug {
-            applicationIdSuffix = ".hudtest"
-            versionNameSuffix = "-hud-test"
-        }
         release {
             optimization {
                 enable = false
             }
-            signingConfig = signingConfigs.getByName("release")
+            // Signed only when a keystore is provided; otherwise assembleRelease yields an unsigned APK.
+            if (providers.environmentVariable("ANDROID_KEYSTORE_PATH").isPresent) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    buildFeatures {
-        compose = true
-    }
 }
 
 dependencies {
-    implementation(platform(libs.androidx.compose.bom))
     implementation(project(":common"))
     implementation(project(":shared"))
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.app.projected)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    debugImplementation(libs.androidx.compose.ui.tooling)
 }
 
 // No implicit import. Only the two explicitly selected local runtime assets are allowed.
@@ -105,7 +96,7 @@ val verifyStandaloneAuthentication by tasks.registering {
     val directory = localAuthenticationAssets
     doLast {
         check(directory != null) {
-            "Standalone car builds require DIPLAY_AUTH_ASSETS_DIR; assembleDebug alone is source-only."
+            "Standalone car builds require RIGPLAY_AUTH_ASSETS_DIR; assembleDebug alone is source-only."
         }
         check(listOf("identity.pk8", "certificate.p7b").all {
             directory.resolve("offline-mfi/$it").let { file -> file.isFile && file.length() > 0 }

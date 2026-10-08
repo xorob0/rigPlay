@@ -1,0 +1,6 @@
+{
+  "type": "error",
+  "code": "shutdown",
+  "message": "SimHub is closing",
+  "fatal": true
+}

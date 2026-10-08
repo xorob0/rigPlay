@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="video_in_carplay">Video in CarPlay (iOS 27)</string>
+    <string name="video_in_carplay_description">A video you send to CarPlay on the iPhone plays full screen on the tablet, as in a parked car. Plain web video (for example from Safari) plays; video protected with FairPlay, such as Apple TV+ or most paid streaming apps, does not. The video’s sound plays on the tablet, not on the PC. Applies at the next connection.</string>
+    <string name="video_back_to_carplay">Back to CarPlay</string>
+    <string name="video_play">Play</string>
+    <string name="video_pause">Pause</string>
+    <string name="video_cannot_play">This video can\'t play on the tablet. Protected video, such as Apple TV+, needs a licensed receiver.</string>
+</resources>

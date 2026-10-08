@@ -1,0 +1,70 @@
+{
+  "approximate": true,
+  "note": "Start/finish-line coordinates (WGS 84) of a few circuits for fake GPS strategy C (#44). APPROXIMATE: taken from OpenStreetMap features tagged as the start/finish line and the first point of the community f1-circuits GeoJSON (github.com/bacinger/f1-circuits), cross-checked against the pit buildings where possible; uncertaintyM is our estimate of how far off each point may be. A user calibration on the rigPlay page always overrides this table. See docs/TRACK_CALIBRATION.md.",
+  "tracks": [
+    {
+      "name": "Circuit de Spa-Francorchamps",
+      "lat": 50.4443,
+      "lon": 5.9650,
+      "uncertaintyM": 150,
+      "aliases": ["spa", "spa francorchamps", "francorchamps"],
+      "exclude": []
+    },
+    {
+      "name": "Nürburgring GP-Strecke",
+      "lat": 50.3356,
+      "lon": 6.9477,
+      "uncertaintyM": 250,
+      "aliases": ["nurburgring", "nuerburgring", "nurburgring gp"],
+      "exclude": ["nordschleife", "combined"]
+    },
+    {
+      "name": "Silverstone Circuit (Grand Prix, Wing pits)",
+      "lat": 52.0693,
+      "lon": -1.0222,
+      "uncertaintyM": 100,
+      "aliases": ["silverstone"],
+      "exclude": ["1967", "1975", "2008", "historic", "classic"]
+    },
+    {
+      "name": "Autodromo Nazionale Monza",
+      "lat": 45.6190,
+      "lon": 9.2812,
+      "uncertaintyM": 150,
+      "aliases": ["monza"],
+      "exclude": ["oval", "1966", "1967", "historic"]
+    },
+    {
+      "name": "Circuit de la Sarthe (Le Mans)",
+      "lat": 47.9499,
+      "lon": 0.2075,
+      "uncertaintyM": 100,
+      "aliases": ["le mans", "lemans", "sarthe", "la sarthe"],
+      "exclude": ["bugatti"]
+    },
+    {
+      "name": "Suzuka International Racing Course",
+      "lat": 34.8433,
+      "lon": 136.5403,
+      "uncertaintyM": 150,
+      "aliases": ["suzuka"],
+      "exclude": ["west"]
+    },
+    {
+      "name": "WeatherTech Raceway Laguna Seca",
+      "lat": 36.5865,
+      "lon": -121.7566,
+      "uncertaintyM": 150,
+      "aliases": ["laguna seca", "laguna", "mazda raceway"],
+      "exclude": []
+    },
+    {
+      "name": "Watkins Glen International",
+      "lat": 42.3411,
+      "lon": -76.9288,
+      "uncertaintyM": 300,
+      "aliases": ["watkins glen", "watkins", "the glen"],
+      "exclude": []
+    }
+  ]
+}

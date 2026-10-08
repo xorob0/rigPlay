@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SimHub telemetry into CarPlay (#41, #45, #46). English only for now. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <!-- Location source (#41) -->
+    <string name="telemetry_location_source">Location source</string>
+    <string name="telemetry_location_source_simhub">SimHub (game car)</string>
+    <string name="telemetry_location_source_tablet">This tablet</string>
+    <string name="telemetry_location_source_none">None</string>
+    <string name="telemetry_location_source_desc">SimHub sends the game car\'s position, speed and gear to Apple Maps; the iPhone falls back to its own GPS when the game stops. This tablet sends its precise Android location. Applies on the next connection: the iPhone reads it when CarPlay connects.</string>
+
+    <!-- Night mode (#45) -->
+    <string name="telemetry_night_from_simhub">Night mode from SimHub</string>
+    <string name="telemetry_night_from_simhub_desc">CarPlay follows the game\'s day and night instead of the tablet\'s. Without game data it follows the tablet.</string>
+
+    <!-- Vehicle status (#46) -->
+    <string name="telemetry_vehicle_status">Fuel and range to CarPlay</string>
+    <string name="telemetry_vehicle_status_desc">Shows the game car\'s fuel level and range in Apple Maps. rigPlay tells CarPlay the rig is an electric car, so Maps may treat it as one. Starts on the next connection once SimHub has sent fuel and range.</string>
+</resources>

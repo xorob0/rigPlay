@@ -1,0 +1,7 @@
+{
+  "type": "audioStart",
+  "stream": "media",
+  "format": "pcm_s16le",
+  "sampleRate": 48000,
+  "channels": 2
+}

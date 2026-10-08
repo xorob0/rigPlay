@@ -1,36 +1,51 @@
-name: Connection, display or audio problem
-description: Help us reproduce an issue on your head unit.
+name: Bug report
+description: Something on the tablet, the SimHub plugin or the link between them does not work.
 title: '[Bug] '
 body:
   - type: markdown
     attributes:
-      value: 'Test while parked. Reports are public: review diagnostic files and remove personal information before attaching them. Never post credentials.'
+      value: 'Reports are public: review diagnostic files and remove personal information before attaching them. Never post credentials, pairing codes or keystores.'
   - type: input
-    id: version
-    attributes: {label: DiPlay version, placeholder: '0.2.12'}
+    id: rigplay-version
+    attributes: {label: rigPlay app version, description: 'Settings → About on the tablet.', placeholder: '0.1.0'}
     validations: {required: true}
   - type: input
-    id: car
-    attributes: {label: Car and head-unit model, placeholder: 'Car model/year, head unit, DiLink/Android version and exact firmware'}
+    id: plugin-version
+    attributes: {label: RigPlay plugin version, description: 'Shown on the RigPlay settings page in SimHub.', placeholder: '0.1.0'}
+    validations: {required: true}
+  - type: input
+    id: simhub-version
+    attributes: {label: SimHub version, placeholder: '9.x.y'}
+    validations: {required: true}
+  - type: input
+    id: tablet
+    attributes: {label: Tablet model and Android version, placeholder: 'e.g. Galaxy Tab S9, Android 14'}
     validations: {required: true}
   - type: input
     id: phone
-    attributes: {label: iPhone model and exact iOS version}
+    attributes: {label: iPhone model and exact iOS version, placeholder: 'e.g. iPhone 15, iOS 26.0.1'}
     validations: {required: true}
   - type: dropdown
     id: transport
     attributes:
-      label: Connection
-      options: ['Wireless: built-in car hotspot', 'Wireless: Wi-Fi Direct', 'Wireless: Existing Wi-Fi / Same LAN', USB, Both, 'Other / unsure']
+      label: Phone connection
+      options: [Wi-Fi Direct (wireless), USB, Both]
+    validations: {required: true}
+  - type: dropdown
+    id: pc-state
+    attributes:
+      label: What the PC was doing
+      description: 'State of the SimHub PC when the problem happened.'
+      options: [On with SimHub running, On without SimHub, Sleeping, 'Off', 'Changing state (going to sleep, waking, shutting down)']
     validations: {required: true}
   - type: textarea
     id: reproduce
     attributes:
       label: What happened and how to reproduce it
-      description: 'Include expected behavior, steps, relevant settings and the approximate failure time. For wireless, include the backend, band/channel if shown, and whether the car is also connected to another Wi-Fi network. For Same LAN, include the router model and whether client isolation is enabled.'
+      description: 'Expected vs. actual behaviour and the exact steps. Mention whether the tablet and PC are on the same network and anything else running on the rig.'
     validations: {required: true}
   - type: textarea
     id: diagnostics
     attributes:
-      label: Diagnostic report or recording
-      description: 'Update and reproduce on 0.2.12, then Settings → Diagnostics → Save diagnostic report. Android 10+ normally saves to Downloads/DiPlay; Android 9 uses a document picker. If storage is unavailable, use View report or Share in the confirmation. Review the text before attaching it and never include your hotspot password. Include the approximate failure time.'
+      label: Diagnostics
+      description: 'Tablet: Settings → Save diagnostic report (saved to Downloads/rigPlay). PC: the RigPlay lines from the SimHub log. Attach the reviewed files here. If export fails, describe exactly when.'

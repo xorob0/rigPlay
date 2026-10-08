@@ -13,19 +13,21 @@ class BootReceiver : BroadcastReceiver() {
         StartupDiagnosticSnapshot.received(context, launchEnabled)
         if (!launchEnabled) return
 
-        val launch = Intent(context, DiPlayActivity::class.java).apply {
+        val launch = Intent(context, RigPlayActivity::class.java).apply {
             addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
                     Intent.FLAG_ACTIVITY_SINGLE_TOP,
             )
+            // With a paired PC, rigPlay goes on to the idle screen (#39).
+            putExtra(RigPlayActivity.EXTRA_FROM_BOOT, true)
         }
         try {
             context.startActivity(launch)
             StartupDiagnosticSnapshot.launchResult(context)
         } catch (error: RuntimeException) {
             StartupDiagnosticSnapshot.launchResult(context, error)
-            Log.w(TAG, "Boot auto-start could not launch DiPlayActivity", error)
+            Log.w(TAG, "Boot auto-start could not launch RigPlayActivity", error)
         }
     }
 

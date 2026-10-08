@@ -35,8 +35,8 @@ class HotspotModeMigrationTest {
         assertEquals(WirelessHotspotMode.WIFI_P2P, AirPlayPersistence.loadWirelessHotspotMode(context))
     }
 
-    @Test @Config(sdk = [28]) fun olderAndroidKeepsWifiDirectSelected() {
+    @Test @Config(sdk = [28]) fun olderAndroidDoesNotFallBackToRemovedLocalMode() {
         prefs.edit().putString("wireless_hotspot_mode", "WIFI_P2P").apply()
-        assertEquals(WirelessHotspotMode.WIFI_P2P, AirPlayPersistence.loadWirelessHotspotMode(context))
+        assertEquals(WirelessHotspotMode.MANUAL, AirPlayPersistence.loadWirelessHotspotMode(context))
     }
 }

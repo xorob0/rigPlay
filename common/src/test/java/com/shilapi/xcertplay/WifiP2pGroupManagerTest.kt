@@ -342,7 +342,7 @@ class WifiP2pGroupManagerTest {
         assertEquals("p2pGroup=unavailable association=unknown", manager.connectionDiagnosticSnapshot())
     }
 
-    @Test fun staleCloseCannotRemoveANewerDiPlaySession() {
+    @Test fun staleCloseCannotRemoveANewerRigPlaySession() {
         val old = WifiP2pGroupManager(context)
         val previous = background { old.start(5000) }
         // The framework has lost the old group; a new controller acquires a fresh one.

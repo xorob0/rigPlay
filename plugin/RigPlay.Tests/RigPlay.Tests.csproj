@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Unit tests for the plugin's pure logic. The plugin targets net48 and references SimHub's WPF assemblies,
+       which cannot run here, so the files with no SimHub or WPF dependency are compiled into this net8.0
+       project directly. Keep those files free of SimHub and WPF types. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>RigPlayPlugin.Tests</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../RigPlay/ProtocolDefaults.cs" Link="Plugin/ProtocolDefaults.cs" />
+    <Compile Include="../RigPlay/RigPlaySettings.cs" Link="Plugin/RigPlaySettings.cs" />
+    <Compile Include="../RigPlay/Theme.cs" Link="Plugin/Theme.cs" />
+    <!-- Protocol, networking and the host that runs them: pure by design, so the tests exercise the real code. -->
+    <Compile Include="../RigPlay/Core/**/*.cs" Link="Plugin/Core/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../RigPlay/Protocol/**/*.cs" Link="Plugin/Protocol/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../RigPlay/Net/**/*.cs" Link="Plugin/Net/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../RigPlay/Pairing/**/*.cs" Link="Plugin/Pairing/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../RigPlay/Dashboards/**/*.cs" Link="Plugin/Dashboards/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../RigPlay/Telemetry/**/*.cs" Link="Plugin/Telemetry/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- The shipped track table of strategy C (#44), under the name ShippedTracks.Default reads. -->
+  <ItemGroup>
+    <EmbeddedResource Include="../RigPlay/Resources/tracks.json" LogicalName="RigPlay.Tracks.json" Link="Plugin/Resources/tracks.json" />
+  </ItemGroup>
+
+  <!-- The golden samples of docs/protocol.md, read by ProtocolFixturesTests. -->
+  <ItemGroup>
+    <None Include="../../protocol/fixtures/**/*" Link="fixtures/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- The audio receiver's pure logic (#24); AudioOutput.cs and AudioSection.cs need NAudio/WASAPI and WPF and stay out. -->
+  <ItemGroup>
+    <Compile Include="../RigPlay/Audio/AudioHeader.cs" Link="Plugin/Audio/AudioHeader.cs" />
+    <Compile Include="../RigPlay/Audio/JitterBuffer.cs" Link="Plugin/Audio/JitterBuffer.cs" />
+    <Compile Include="../RigPlay/Audio/AudioMath.cs" Link="Plugin/Audio/AudioMath.cs" />
+    <Compile Include="../RigPlay/Audio/TalkGate.cs" Link="Plugin/Audio/TalkGate.cs" />
+    <Compile Include="../RigPlay/Audio/TalkPauser.cs" Link="Plugin/Audio/TalkPauser.cs" />
+    <Compile Include="../RigPlay/Audio/AudioStats.cs" Link="Plugin/Audio/AudioStats.cs" />
+    <Compile Include="../RigPlay/Audio/AudioReceiver.cs" Link="Plugin/Audio/AudioReceiver.cs" />
+    <Compile Include="../RigPlay/Audio/AudioGlue.cs" Link="Plugin/Audio/AudioGlue.cs" />
+    <Compile Include="../RigPlay/Audio/OpusSupport.cs" Link="Plugin/Audio/OpusSupport.cs" />
+    <!-- The PC microphone (#34): packetizer, stream lifecycle and glue. MicCapture.cs and MicSection.cs need NAudio and WPF and stay out. -->
+    <Compile Include="../RigPlay/Audio/MicGainControl.cs" Link="Plugin/Audio/MicGainControl.cs" />
+    <Compile Include="../RigPlay/Audio/MicSender.cs" Link="Plugin/Audio/MicSender.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- SimHub persists the settings with Newtonsoft.Json; the round-trip test uses the same serialiser, at the version SimHub 9.12.6 ships. -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <!-- The Opus codec the plugin decodes with (OpusSupport.cs); the tests also encode with it. -->
+    <PackageReference Include="Concentus" Version="2.2.2" />
+  </ItemGroup>
+</Project>

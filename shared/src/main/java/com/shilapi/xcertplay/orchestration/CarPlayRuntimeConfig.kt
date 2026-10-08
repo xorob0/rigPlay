@@ -11,18 +11,15 @@ enum class CarPlayTransport {
     WIRELESS,
 }
 
-enum class MfiTarget {
-    LOCAL,
-    USB_CH341,
-    I2C,
-    REMOTE,
-}
-
 enum class WirelessHotspotMode {
     WIFI_P2P,
     LOCAL_ONLY_HOTSPOT,
     MANUAL,
-    EXISTING_WIFI,
+    /**
+     * Experimental (#33): the tablet stays a client of the home Wi-Fi and hands that network to the
+     * iPhone instead of creating one. Untested with iOS.
+     */
+    EXISTING_NETWORK,
 }
 
 enum class ManualHotspotBand {
@@ -39,17 +36,11 @@ enum class ManualHotspotSecurity {
 }
 
 /**
- * Deployment-owned constants for one head unit. There are deliberately no built-in Apple or
- * CH341 product IDs: the physical devices attached to the target must be identified first.
+ * Deployment-owned constants for one head unit. There are deliberately no built-in Apple
+ * product IDs: the physical devices attached to the target must be identified first.
  */
 class CarPlayRuntimeConfig(
     val iphoneDevices: List<UsbDeviceId> = emptyList(),
-    val mfiTarget: MfiTarget = MfiTarget.USB_CH341,
-    val ch341Devices: List<UsbDeviceId> = emptyList(),
-    val ch341MfiResetGpio: Int? = null,
-    val linuxI2cPath: String? = null,
-    val remoteMfiServer: String? = null,
-    val remoteMfiToken: String? = null,
     val hostMac: ByteArray = DEFAULT_HOST_MAC,
     val linkLocal: String = "fe80::2",
     val identification: Iap2IdentificationConfig,
@@ -63,11 +54,12 @@ class CarPlayRuntimeConfig(
     val manualHotspotBand: ManualHotspotBand = ManualHotspotBand.AUTO,
     val manualHotspotChannel: Int = 0,
     val manualHotspotSecurity: ManualHotspotSecurity = ManualHotspotSecurity.WPA2,
+    /** Existing-network mode: the name the user entered; the live name read from Android wins when readable. */
+    val existingNetworkSsid: String? = null,
+    val existingNetworkPassphrase: String? = null,
     val wirelessBluetoothDeviceAddress: String? = null,
     val locationReportingEnabled: Boolean = false,
     val wifiP2pPreferredChannel: Int = WifiP2pChannels.AUTO,
-    val existingWifiSsid: String = "",
-    val existingWifiPassphrase: String = "",
 ) {
     init {
         require(iphoneDevices.all { it.vendorId == APPLE_VENDOR_ID }) {
@@ -80,30 +72,7 @@ class CarPlayRuntimeConfig(
         }
         require(label.isNotBlank()) { "label must not be blank" }
         require(hostName.isNotBlank()) { "hostName must not be blank" }
-        require(mfiTarget != MfiTarget.USB_CH341 || ch341Devices.isNotEmpty()) {
-            "CH341 devices must be configured for the USB/CH341 MFi target"
-        }
-        require(mfiTarget != MfiTarget.I2C || !linuxI2cPath.isNullOrBlank()) {
-            "A Linux I2C path must be configured for the I2C MFi target"
-        }
-        require(mfiTarget != MfiTarget.REMOTE || !remoteMfiServer.isNullOrBlank()) {
-            "A server address must be configured for the remote MFi target"
-        }
-        require(ch341MfiResetGpio == null || ch341MfiResetGpio in 0..5) {
-            "CH341 MFi reset GPIO must be D0..D5"
-        }
-        require(remoteMfiServer?.contains('\u0000') != true) {
-            "Remote MFi server must not contain U+0000"
-        }
-        require(remoteMfiToken?.contains('\u0000') != true) {
-            "Remote MFi token must not contain U+0000"
-        }
         // Only a wireless session starts the hotspot; a USB session must not fail on unused settings.
-        if (transport == CarPlayTransport.WIRELESS && wirelessHotspotMode == WirelessHotspotMode.EXISTING_WIFI) {
-            require(ManualHotspotValidation.error(existingWifiSsid, existingWifiPassphrase) == null) {
-                "Existing Wi-Fi requires an SSID of at most 32 UTF-8 bytes and an empty (open) or 8–63 character WPA2 password"
-            }
-        }
         if (transport == CarPlayTransport.WIRELESS && wirelessHotspotMode == WirelessHotspotMode.WIFI_P2P) {
             require(WifiP2pChannels.isValid(wifiP2pPreferredChannel)) {
                 "Unsupported Wi-Fi Direct channel: $wifiP2pPreferredChannel"
@@ -145,6 +114,17 @@ class CarPlayRuntimeConfig(
                 "manualHotspotPassphrase is required for secured manual hotspots"
             }
         }
+        if (transport == CarPlayTransport.WIRELESS && wirelessHotspotMode == WirelessHotspotMode.EXISTING_NETWORK) {
+            val ssid = existingNetworkSsid.orEmpty()
+            val passphrase = existingNetworkPassphrase.orEmpty()
+            require('\u0000' !in ssid && '\u0000' !in passphrase) {
+                "existing network name and password must not contain U+0000"
+            }
+            require(ssid.encodeToByteArray().size <= 32) { "existingNetworkSsid must be at most 32 bytes" }
+            require(passphrase.isEmpty() || passphrase.length in 8..63) {
+                "existingNetworkPassphrase must be empty or between 8 and 63 characters"
+            }
+        }
     }
 
     companion object {
@@ -166,4 +146,34 @@ fun isManualHotspotChannelCompatible(band: ManualHotspotBand, channel: Int): Boo
     ManualHotspotBand.AUTO -> channel in 1..196
     ManualHotspotBand.GHZ_2_4 -> channel in 1..14
     ManualHotspotBand.GHZ_5 -> channel in 32..177
+}
+
+/** Which tablet-side prerequisites each wireless mode has (#33). */
+object WirelessModeRequirements {
+    /**
+     * Only the tablet-hotspot mode attaches to Android tethering, so only it is blocked when
+     * tethering is off ([com.shilapi.xcertplay.network.CarHotspotStatus]). The existing-network mode
+     * never needs it: the network belongs to the home router.
+     */
+    fun requiresTethering(mode: WirelessHotspotMode): Boolean = mode == WirelessHotspotMode.MANUAL
+
+    /**
+     * Whether the iPhone reaches rigPlay on the station (default-route) Wi-Fi interface. The modes
+     * that create a network must avoid that interface, which leads to the home router; the
+     * existing-network mode must use exactly it.
+     */
+    fun servesOnStationInterface(mode: WirelessHotspotMode): Boolean =
+        mode == WirelessHotspotMode.EXISTING_NETWORK
+
+    /** Modes whose network name and password the user types into Settings. */
+    fun needsSavedCredentials(mode: WirelessHotspotMode): Boolean =
+        mode == WirelessHotspotMode.MANUAL || mode == WirelessHotspotMode.EXISTING_NETWORK
+
+    /** Wi-Fi Direct needs Android 10; older tablets fall back to LocalOnlyHotspot. Other modes are kept. */
+    fun effectiveMode(configured: WirelessHotspotMode, sdkInt: Int): WirelessHotspotMode =
+        if (sdkInt < 29 && configured == WirelessHotspotMode.WIFI_P2P) {
+            WirelessHotspotMode.LOCAL_ONLY_HOTSPOT
+        } else {
+            configured
+        }
 }

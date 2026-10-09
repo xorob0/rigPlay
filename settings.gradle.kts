@@ -19,6 +19,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // libsu (root shell helper used by the vendored Android Auto receiver) is published on JitPack only.
+        maven("https://jitpack.io") {
+            content { includeGroup("com.github.topjohnwu.libsu") }
+        }
     }
 }
 
@@ -27,6 +31,8 @@ include(":common")
 include(":mobile")
 include(":automotive")
 include(":shared")
+include(":androidauto")
+include(":androidauto:proto")
 include(":maphost")
 project(":maphost").projectDir = file("samples/maphost")
 include(":home")

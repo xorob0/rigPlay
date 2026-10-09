@@ -32,6 +32,10 @@ Gradle dependency declarations and version catalog accompany the source. License
 
 The public preview APK includes an accessory certificate/key pair recovered from public Carlinkit C2Air Allwinner V821 firmware during the owner's local investigation. These data are not newly generated Apple-issued credentials for DiPlay and are not relicensed as project source code. They are bundled in the preview APK to reproduce the offline experiment; continued acceptance and suitability for general distribution are unresolved. The source archive does not contain the private key, and the separate Android APK-signing key is never distributed.
 
+## Android Auto receiver
+
+`androidauto/` is the Android Auto receiver of [DiAuto](https://github.com/shihabal3amri/DiAuto) 0.3.11, an independent fork of [Open Headunit](https://github.com/andreknieriem/open-headunit) and of [headunit](https://github.com/mikereidis/headunit) by Michael Reid, vendored as a library module with the small patches listed in `androidauto/VENDORED.md`. It is licensed under AGPL version 3 (`androidauto/LICENSE`); GPLv3 §13 permits combining it with this GPL-3.0 project, and the AGPL terms continue to apply to that module. It adds Conscrypt (Apache 2.0), protobuf-java (BSD-3), Google Play Services Nearby (Google Play Services terms), Glide (BSD/MIT/Apache 2.0), ZXing (Apache 2.0), dexmaker (Apache 2.0), Shizuku API (Apache 2.0), libsu (Apache 2.0) and the FFmpeg arm64 libraries shipped by DiAuto (LGPL 2.1+; see DiAuto's `docs/THIRD_PARTY.md`). The Android Auto head-unit TLS private key is not distributed with this source. Android Auto is a Google trademark.
+
 ## Download website
 
 The static site layout, CSS and generator adapt DiAuto (AGPL-3.0). The AGPL license text is included with the source.

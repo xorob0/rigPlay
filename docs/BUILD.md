@@ -24,6 +24,16 @@ Output: `mobile/build/outputs/apk/release/mobile-release.apk`. The release APK d
 
 The public release source archive corresponds to the tagged source and excludes runtime identities, signing keys, local configuration and build output.
 
+## Android Auto head-unit key (proof of concept)
+
+The `androidauto` module (see `docs/ANDROID_AUTO_POC.md`) needs the Android Auto head-unit TLS private key at run time. It is never committed. Point `ANDROID_AUTO_KEY_DIR` at a directory holding `raw/privkey` (PEM, PKCS#8) and the build adds it as a resource directory:
+
+```sh
+ANDROID_AUTO_KEY_DIR=/absolute/path/to/android-auto-key ./gradlew :mobile:assembleDebug
+```
+
+Without it the APK still builds and CarPlay is unaffected; the Android Auto handshake then fails with "Android Auto head-unit key not provisioned".
+
 ## Standalone car-test APK
 
 Use `:mobile:assembleStandaloneDebug` for a test APK that must connect to an iPhone:

@@ -62,6 +62,8 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(project(":common"))
     implementation(project(":shared"))
+    // Android Auto receiver (vendored DiAuto); see androidauto/VENDORED.md and docs/ANDROID_AUTO_POC.md.
+    implementation(project(":androidauto"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.app.projected)
     implementation(libs.androidx.compose.material3)

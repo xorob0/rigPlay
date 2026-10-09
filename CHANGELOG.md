@@ -1,3 +1,7 @@
+# Unreleased
+
+- Proof of concept: Android Auto next to CarPlay in one APK. DiAuto 0.3.11 is vendored as the `androidauto` library module (AGPL-3.0) and the home card gains a Phone choice (iPhone · CarPlay / Android · Android Auto). Not yet exercised on a device; see `docs/ANDROID_AUTO_POC.md`.
+
 # DiPlay 0.2.13 — 2026-10-06
 
 - Enable the legacy Android 9 Wi-Fi Direct group path with generated credentials and serialized ownership/cleanup; requested frequency remains unverified on Android 9 (#282).

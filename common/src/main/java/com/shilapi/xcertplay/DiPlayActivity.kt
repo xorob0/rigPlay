@@ -252,8 +252,9 @@ class DiPlayActivity : ComponentActivity() {
         pausedForAdbSwitchChange = false
         if (initialLaunch) {
             initialLaunch = false
-            startCarHotspotOnLaunch()
-            if (setupError == null && !CarPlayBackgroundSession.hasSession() &&
+            val carPlay = ProjectionSourceStore.load(this) == ProjectionSource.CARPLAY
+            if (carPlay) startCarHotspotOnLaunch()
+            if (carPlay && setupError == null && !CarPlayBackgroundSession.hasSession() &&
                 DiPlayPreferences.autoConnect(this) && intent.getStringExtra("page") == null) {
                 handler.post { connect(AirPlayPersistence.loadWirelessEnabled(this)) }
             }
@@ -359,6 +360,7 @@ class DiPlayActivity : ComponentActivity() {
     }
 
     private fun home(content: LinearLayout) {
+        if (ProjectionSourceStore.load(this) == ProjectionSource.ANDROID_AUTO) { androidAutoHome(content); return }
         val compact = isCompactLayout
         if (compact) {
             val card = card().apply { setPadding(dp(12), dp(10), dp(12), dp(10)) }
@@ -382,6 +384,8 @@ class DiPlayActivity : ComponentActivity() {
             buttonRow.addView(space(8), LinearLayout.LayoutParams(dp(8), 1))
             buttonRow.addView(settingsBtn, LinearLayout.LayoutParams(0, dp(38), 1f))
             card.addView(buttonRow)
+            card.addView(space(8))
+            phonePlatformChoice(card)
 
             disconnectButton = button(getString(R.string.disconnect), false) {
                 disconnectButton?.isEnabled = false
@@ -429,6 +433,8 @@ class DiPlayActivity : ComponentActivity() {
             card.addView(button(getString(R.string.open_car_hotspot_settings), false) { openCarWifiSettings() }, matchButton(10, 56))
         }
         card.addView(button(getString(R.string.choose_iphone), false) { choosePhone() }, matchButton(16, 56))
+        card.addView(space(12))
+        phonePlatformChoice(card)
         disconnectButton = button(getString(R.string.disconnect), false) {
             disconnectButton?.isEnabled = false
             CarPlayBackgroundSession.stop { runOnUiThread { refreshStatus() } }
@@ -1098,6 +1104,62 @@ class DiPlayActivity : ComponentActivity() {
             runCatching { startActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)) }
         }
         openSystem(wifi)
+    }
+
+    // Phone platform: CarPlay (this receiver) or Android Auto (the vendored DiAuto receiver).
+    private fun phonePlatformChoice(parent: LinearLayout) {
+        val sources = ProjectionSource.entries
+        choice(parent, getString(R.string.phone_platform),
+            listOf(getString(R.string.phone_platform_iphone), getString(R.string.phone_platform_android)),
+            sources.indexOf(ProjectionSourceStore.load(this)), reconnects = false) { index ->
+            val chosen = sources[index]
+            if (chosen == ProjectionSource.ANDROID_AUTO && !AndroidAutoReceiver.isPackaged(this)) {
+                toast(getString(R.string.android_auto_not_in_this_build))
+            } else {
+                ProjectionSourceStore.save(this, chosen)
+            }
+            render()
+        }
+    }
+
+    // The Android Auto home hands over to the DiAuto screens packaged in the same APK. Status,
+    // connect and disconnect widgets stay null here so [refreshStatus] leaves this page alone.
+    private fun androidAutoHome(content: LinearLayout) {
+        val compact = isCompactLayout
+        val packaged = AndroidAutoReceiver.isPackaged(this)
+        val card = card().apply { if (compact) setPadding(dp(12), dp(10), dp(12), dp(10)) }
+        if (!compact) card.addView(label(getString(R.string.wireless_android_auto), 12, ACCENT, true).apply { letterSpacing = .12f })
+        card.addView(label(getString(if (packaged) R.string.ready_when_you_are else R.string.android_auto_not_in_this_build),
+            if (compact) 16 else 24, TEXT, true).apply { setPadding(0, if (compact) 0 else dp(10), 0, if (compact) dp(8) else dp(16)) })
+        card.addView(button(getString(R.string.open_android_auto), true) { openAndroidAuto(AndroidAutoReceiver.homeIntent(this)) }
+            .apply { isEnabled = packaged }, matchButton(0, if (compact) 44 else 68))
+        card.addView(button(getString(R.string.connect_android_with_usb), false) { openAndroidAuto(AndroidAutoReceiver.connectUsbIntent(this)) }
+            .apply { isEnabled = packaged }, matchButton(if (compact) 8 else 10, if (compact) 38 else 56))
+        card.addView(label(getString(R.string.android_auto_home_hint), if (compact) 13 else 15, MUTED).apply {
+            setPadding(0, dp(if (compact) 8 else 14), 0, dp(if (compact) 8 else 16))
+        })
+        phonePlatformChoice(card)
+        val buttons = row().apply { gravity = Gravity.CENTER_VERTICAL }
+        val height = dp(if (compact) 38 else 56)
+        buttons.addView(button(getString(R.string.android_auto_settings), false) { openAndroidAuto(AndroidAutoReceiver.settingsIntent(this)) }
+            .apply { isEnabled = packaged }, LinearLayout.LayoutParams(0, height, 1f))
+        buttons.addView(space(8), LinearLayout.LayoutParams(dp(8), 1))
+        buttons.addView(button(getString(R.string.settings), false) { page = "settings"; render() }, LinearLayout.LayoutParams(0, height, 1f))
+        card.addView(buttons)
+        if (compact) { content.addView(card); return }
+        val left = column()
+        left.addView(label(getString(R.string.your_phone_your_drive), 12, ACCENT, true).apply { letterSpacing = .16f })
+        left.addView(label(getString(R.string.a_familiar_drive), 36, TEXT, true).apply { setPadding(0, dp(12), 0, dp(10)) })
+        left.addView(label(getString(R.string.android_auto_hero), 19, MUTED))
+        content.addView(left)
+        content.addView(space(26))
+        content.addView(card)
+        content.addView(space(24))
+        content.addView(label("${getString(R.string.home_public_preview)}${version()}", 12, MUTED).apply { letterSpacing = .08f })
+    }
+
+    private fun openAndroidAuto(intent: Intent) {
+        if (runCatching { startActivity(intent) }.isFailure) toast(getString(R.string.android_auto_not_in_this_build))
     }
 
     private fun connectionSetup(content: LinearLayout) {

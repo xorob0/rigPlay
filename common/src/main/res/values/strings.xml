@@ -683,4 +683,15 @@
     <string name="car_button_description">CarPlay shows this icon and name in its app list. Tap it to return to the car\'s own screen. Changes apply the next time CarPlay connects.</string>
     <string name="car_button_saved_next_connection">Saved. CarPlay shows the new icon and name the next time it connects.</string>
     <string name="this_head_unit_has_no_image_picker">This head unit has no image picker.</string>
+    <!-- Phone platform switch and the Android Auto home (vendored DiAuto receiver). -->
+    <string name="phone_platform">Phone</string>
+    <string name="phone_platform_iphone">iPhone · CarPlay</string>
+    <string name="phone_platform_android">Android · Android Auto</string>
+    <string name="wireless_android_auto">ANDROID AUTO</string>
+    <string name="open_android_auto">Open Android Auto</string>
+    <string name="connect_android_with_usb">Connect Android with USB</string>
+    <string name="android_auto_settings">Android Auto settings</string>
+    <string name="android_auto_home_hint">Android Auto keeps its own connection, display and audio settings. Wireless phones pair over Bluetooth and join the car\'s Wi-Fi from the Android Auto screen.</string>
+    <string name="android_auto_hero">Your maps, music and conversations. Android Auto, right here on your car\'s display.</string>
+    <string name="android_auto_not_in_this_build">Android Auto isn\'t included in this build.</string>
 </resources>
